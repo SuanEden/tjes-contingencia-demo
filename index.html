@@ -323,7 +323,6 @@ function ticketPasteText(t,index){
  const lines=['• '+(index?index+' - ':'')+'CHAMADO: '+(text(t.chamado)||'Sem protocolo')];
  // Primeiro os dados necessários para identificar o atendimento.
  for(const line of [
-  label('Resumo',t.problema,true),
   label('Nome',t.nome,true),
   label('CPF',t.cpf),
   label('E-mail',t.email),
@@ -337,7 +336,7 @@ function ticketPasteText(t,index){
   label('Endereço',t.endereco),
   label('Chefia',t.chefia)
  ])if(line)lines.push(line);
- lines.push('',label('Descrição',t.descricao,true),'',label('Resolução / tratativa',t.resolucao,true));
+ lines.push('',label('Resumo',t.problema,true),label('Descrição',t.descricao,true),'',label('Resolução / tratativa',t.resolucao,true));
  return lines.join('\n');
 }
 function ticketsTxtContent(items){
