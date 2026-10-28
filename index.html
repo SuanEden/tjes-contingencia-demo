@@ -170,7 +170,7 @@ html[data-theme="dark"] #view-dashboard .dash-panel-tools:not([hidden]){backgrou
 <section id="view-list" class="hide"><div class="panel"><div class="row between"><h2>Atendimentos registrados</h2><span class="hint" id="count"></span></div><div class="row"><input style="max-width:360px" id="search" placeholder="Pesquisar nome, protocolo ou problema"><input id="dateFilter" type="date" style="max-width:180px"><button id="showAll">Todas as datas</button><button type="button" id="insertExamples" title="Adicionar atendimentos fictícios para testar as funcionalidades">＋ Inserir 6 exemplos</button></div><div class="row txt-export-actions"><button type="button" class="primary" id="txtExportAll">↓ TXT de todos</button><button type="button" id="txtExportSelected">↓ TXT selecionados</button><button type="button" id="txtPreview">Visualizar texto ampliado</button><button type="button" id="txtSelectVisible">Selecionar resultados</button><button type="button" id="txtClearSelection">Limpar seleção</button><span id="txtSelectedCount" class="hint" aria-live="polite">0 selecionados</span></div><div class="tablewrap" style="margin-top:15px"><table><thead><tr><th><input type="checkbox" id="txtToggleVisible" aria-label="Selecionar todos os atendimentos exibidos" title="Selecionar todos os atendimentos exibidos"></th><th>Data/hora</th><th>Chamado</th><th>Nome</th><th>Problema</th><th>Status</th><th>Ações</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
 <dialog id="txtPreviewDialog" class="txt-preview-dialog" aria-label="Prévia de atendimentos em texto">
  <div class="row between"><strong>Prévia para copiar e colar</strong><button type="button" id="txtClosePreview" aria-label="Fechar prévia">✕</button></div>
- <p class="hint">Fonte ampliada apenas nesta visualização. O arquivo TXT usa a fonte configurada no programa que o abrir.</p>
+ <p class="hint">Confira o total de atendimentos, selecione os trechos desejados e copie. O arquivo .txt não define o tamanho da fonte do Bloco de Notas.</p>
  <textarea id="txtPreviewContent" readonly spellcheck="false" aria-label="Conteúdo TXT ampliado"></textarea>
  <div class="row"><button type="button" class="primary" id="txtCopyPreview">Copiar todo o texto</button></div>
  </dialog>
@@ -248,44 +248,66 @@ function updateTxtSelected(){
 function txtVisibleIds(){return [...document.querySelectorAll('#rows tr')].map(row=>row.querySelector('.txt-ticket-check')?.dataset.id).filter(Boolean)}
 // Texto operacional pronto para seleção e colagem manual no sistema oficial.
 // Formato de leitura e colagem: marcadores consistentes por campo.
+// TXT operacional em UTF-8: blocos curtos, texto literal e campos vazios opcionais omitidos.
 function ticketPasteText(t,index){
- const values=[
-  ['Problema',t.problema],['Nome',t.nome],['CPF',t.cpf],['E-mail',t.email],
-  ['Telefone',t.telefone],['Ramal',t.ramal],['Ocupação',t.ocupacao],
-  ['Endereço',t.endereco],['Chefia',t.chefia],['Seção',t.secao],
-  ['Departamento',t.departamento],['Edifício',t.edificio],['Sala',t.sala],
-  ['Descrição',t.descricao],['Resolução',t.resolucao],['Status',t.status]
- ];
- const lines=['•  '+(index||1)+' - CHAMADO: '+String(t.chamado||'Sem protocolo')];
- const importantFields=new Set(['Problema','Nome','Descrição','Resolução','Status']);
- for(const [label,value] of values){
-  const raw=String(value??'').trim();
-  // Campos complementares sem valor não poluem o TXT; campos principais permanecem identificados.
-  if(!raw&&!importantFields.has(label))continue;
-  const normalized=raw.replace(/\r\n?/g,'\n').replace(/\n/g,'\n     ');
-  lines.push('•  '+label+': '+normalized);
- }
+ const text=value=>String(value??'').trim().replace(/\r\n?/g,'\n');
+ const label=(name,value,required=false)=>{
+  const raw=text(value);
+  if(!raw&&!required)return null;
+  return '• '+name+':'+(raw?' '+raw.replace(/\n/g,'\n    '):'');
+ };
+ const lines=['• '+(index?index+' - ':'')+'CHAMADO: '+(text(t.chamado)||'Sem protocolo')];
+ // Primeiro os dados necessários para identificar o atendimento.
+ for(const line of [
+  label('Problema',t.problema,true),
+  label('Nome',t.nome,true),
+  label('CPF',t.cpf),
+  label('E-mail',t.email),
+  label('Telefone',t.telefone),
+  label('Ramal',t.ramal),
+  label('Seção',t.secao),
+  label('Departamento',t.departamento),
+  label('Edifício',t.edificio),
+  label('Sala',t.sala),
+  label('Ocupação',t.ocupacao),
+  label('Endereço',t.endereco),
+  label('Chefia',t.chefia)
+ ])if(line)lines.push(line);
+ lines.push('',label('Descrição',t.descricao,true),'',label('Resolução / tratativa',t.resolucao,true),'',label('Status',t.status,true));
  return lines.join('\n');
 }
 function ticketsTxtContent(items){
- const dates=[...new Set(items.map(t=>localDay(new Date(t.created))))];
- const heading=dates.length===1?'RELATÓRIO DE ATENDIMENTOS — '+dates[0].split('-').reverse().join('/'):'RELATÓRIO DE ATENDIMENTOS — PERÍODO SELECIONADO';
- const separator='='.repeat(61),divider='-'.repeat(61);
- const count={pending:0,resolved:0,transferred:0,other:0};
+ if(!items.length)return '';
+ const dates=items.map(t=>localDay(new Date(t.created))).filter(Boolean).sort();
+ const first=dates[0]?.split('-').reverse().join('/')||'—';
+ const last=dates[dates.length-1]?.split('-').reverse().join('/')||'—';
+ const interval=first===last?first:first+' a '+last;
+ const counts={pending:0,resolved:0,transferred:0,other:0};
  for(const t of items){
-  if(t.status==='Pendente')count.pending++;
-  else if(t.status==='Resolvido')count.resolved++;
-  else if(t.status==='Transferido ao sistema oficial')count.transferred++;
-  else count.other++;
+  if(t.status==='Pendente')counts.pending++;
+  else if(t.status==='Resolvido')counts.resolved++;
+  else if(t.status==='Transferido ao sistema oficial')counts.transferred++;
+  else counts.other++;
  }
- const summary=[
-  heading,separator,
+ const line='='.repeat(62),divider='-'.repeat(62);
+ const header=[
+  'RELATÓRIO DE ATENDIMENTOS | TJES CONTINGÊNCIA',
+  line,
+  'PERÍODO: '+interval,
   'TOTAL DE ATENDIMENTOS: '+items.length,
-  'Pendentes: '+count.pending+'  |  Resolvidos: '+count.resolved,
-  'Transferidos: '+count.transferred+'  |  Outros/registrados: '+count.other,
-  divider,''
+  'PENDENTES: '+counts.pending+'  |  RESOLVIDOS: '+counts.resolved,
+  'REGISTRADOS NO SISTEMA: '+counts.transferred+'  |  OUTROS: '+counts.other,
+  line
  ];
- return [...summary,...items.flatMap((t,i)=>[ticketPasteText(t,i+1),'',divider,''])].join('\n');
+ const blocks=items.map((t,i)=>[
+  '',
+  'ATENDIMENTO '+String(i+1).padStart(2,'0')+' DE '+String(items.length).padStart(2,'0'),
+  'Data / hora: '+(t.created?new Date(t.created).toLocaleString('pt-BR'):'Não informada'),
+  ticketPasteText(t,i+1),
+  '',
+  divider
+ ].join('\n'));
+ return [...header,...blocks].join('\n').trimEnd()+'\n';
 }
 function exportTicketsTxt(items,name){
  if(!items.length){alert('Não há atendimentos para baixar.');return}
@@ -309,6 +331,7 @@ $('#txtPreview').onclick=()=>{
  const items=(marked.length?marked:data.tickets).slice().sort((a,b)=>a.created.localeCompare(b.created));
  if(!items.length){alert('Não há atendimentos para visualizar.');return}
  $('#txtPreviewContent').value=ticketsTxtContent(items);
+ $('#txtCopyPreview').textContent='Copiar todo o texto';
  $('#txtPreviewDialog').showModal();
 };
 $('#txtClosePreview').onclick=()=>$('#txtPreviewDialog').close();
