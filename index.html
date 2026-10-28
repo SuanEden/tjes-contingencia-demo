@@ -273,7 +273,7 @@ function ticketPasteText(t,index){
   label('Endereço',t.endereco),
   label('Chefia',t.chefia)
  ])if(line)lines.push(line);
- lines.push('',label('Descrição',t.descricao,true),'',label('Resolução / tratativa',t.resolucao,true),'',label('Status',t.status,true));
+ lines.push('',label('Descrição',t.descricao,true),'',label('Resolução / tratativa',t.resolucao,true));
  return lines.join('\n');
 }
 function ticketsTxtContent(items){
@@ -282,26 +282,19 @@ function ticketsTxtContent(items){
  const first=dates[0]?.split('-').reverse().join('/')||'—';
  const last=dates[dates.length-1]?.split('-').reverse().join('/')||'—';
  const interval=first===last?first:first+' a '+last;
- const counts={pending:0,resolved:0,transferred:0,other:0};
- for(const t of items){
-  if(t.status==='Pendente')counts.pending++;
-  else if(t.status==='Resolvido')counts.resolved++;
-  else if(t.status==='Transferido ao sistema oficial')counts.transferred++;
-  else counts.other++;
- }
  const line='='.repeat(62),divider='-'.repeat(62);
  const header=[
-  'RELATÓRIO DE ATENDIMENTOS | TJES CONTINGÊNCIA',
+  'CONTROLE DE ATENDIMENTOS PARA LANÇAMENTO',
   line,
   'PERÍODO: '+interval,
   'TOTAL DE ATENDIMENTOS: '+items.length,
-  'PENDENTES: '+counts.pending+'  |  RESOLVIDOS: '+counts.resolved,
-  'REGISTRADOS NO SISTEMA: '+counts.transferred+'  |  OUTROS: '+counts.other,
+  'MARCAÇÃO: - [ ] ainda não lançado  |  - [x] lançado no sistema',
+  'Marque manualmente cada atendimento após copiar e colar.',
   line
  ];
  const blocks=items.map((t,i)=>[
   '',
-  'ATENDIMENTO '+String(i+1).padStart(2,'0')+' DE '+String(items.length).padStart(2,'0'),
+  '- [ ] ATENDIMENTO '+String(i+1).padStart(2,'0')+' DE '+String(items.length).padStart(2,'0'),
   'Data / hora: '+(t.created?new Date(t.created).toLocaleString('pt-BR'):'Não informada'),
   ticketPasteText(t,i+1),
   '',
