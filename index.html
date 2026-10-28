@@ -155,8 +155,8 @@ html[data-theme="dark"] #view-dashboard .dashboard-edit-toggle[aria-pressed="tru
 #view-dashboard .dashcard[data-panel="All"] .dashbody{height:310px}
 html[data-theme="dark"] #view-dashboard .dash-panel-tools:not([hidden]){background:#1c3145;border-color:#37536a}
 @media(max-width:700px){#view-dashboard .dashheading>.row{padding-right:0;padding-top:35px}#view-dashboard .dashcard[data-panel="All"] .dashbody{height:275px}}
-.contact-lookup{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.contact-lookup button{font-size:12px;padding:6px 9px;white-space:normal}.contact-lookup .hint{font-size:11px;line-height:1.35}@media(max-width:550px){.contact-lookup{align-items:flex-start;flex-direction:column}}</style></head><body>
-<div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Backup</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Protótipo sem senha — use somente dados fictícios até aprovação da TI</span></div><div class="row"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Ativar tema escuro" aria-pressed="false">☾ Tema escuro</button><span class="status">● Offline</span></div></header><div class="content">
+.contact-lookup{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.contact-lookup button{font-size:12px;padding:6px 9px;white-space:normal}.contact-lookup .hint{font-size:11px;line-height:1.35}@media(max-width:550px){.contact-lookup{align-items:flex-start;flex-direction:column}}.transfer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.transfer-option{border:1px solid #c8d8e5;border-radius:10px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}.transfer-option h3{margin:0}.transfer-option p{font-size:13px;color:inherit;opacity:.8}.transfer-option label{display:flex;gap:8px;align-items:flex-start;font-size:13px}.transfer-option input[type=checkbox]{width:17px;min-width:17px;margin:2px 0}.transfer-option button{margin-top:6px}.transfer-option #importOptions{width:100%}.transfer-option #importOptions[hidden]{display:none}.transfer-option #importOptions label{margin:10px 0}html[data-theme="dark"] .transfer-option{border-color:#415c72}@media(max-width:800px){.transfer-grid{grid-template-columns:1fr}}</style></head><body>
+<div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Importar e exportar</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Protótipo sem senha — use somente dados fictícios até aprovação da TI</span></div><div class="row"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Ativar tema escuro" aria-pressed="false">☾ Tema escuro</button><span class="status">● Offline</span></div></header><div class="content">
 <section id="view-dashboard"><div class="row between dashheading"><div><span class="dash-eyebrow">VISÃO OPERACIONAL</span><h2>Atendimentos do dia</h2><span class="hint">Acompanhamento local de chamados • Sem integração com o Assyst</span></div><div class="row"><input type="date" id="dashboardDate" aria-label="Data dos atendimentos" style="width:170px"><button class="primary" id="dashboardNew">+ Novo atendimento</button><button id="dailyCopy">Copiar relatório do dia</button><button type="button" id="dashboardEditToggle" class="dashboard-edit-toggle" aria-label="Editar organização dos painéis" aria-pressed="false" title="Editar organização dos painéis">✎</button></div></div><div class="dash-overview" aria-label="Resumo de atendimentos do dia"><div class="dash-stat"><span class="dash-stat-label">Atendimentos pendentes</span><strong id="statPending">0</strong><span class="dash-stat-foot">Chamados aguardando atendimento</span></div><div class="dash-stat"><span class="dash-stat-label">Registrados no sistema</span><strong id="statTransferred">0</strong><span class="dash-stat-foot">Chamados encaminhados ao sistema oficial</span></div></div><div class="row dash-panel-toolbar"><div id="dashPanelTools" class="dash-panel-tools" hidden><button type="button" id="addPanel">+ Criar painel</button><button type="button" id="resetPanels">Restaurar painéis padrão</button><span class="hint">Arraste o título para reorganizar. Use × para remover um painel.</span></div></div><div class="dashgrid"><article class="dashcard" data-panel="All"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">ATENDIMENTOS REGISTRADOS <span id="dashAllCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashAll"></div></article><article class="dashcard" data-panel="Pending"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">PENDENTES <span id="dashPendingCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashPending"></div></article><article class="dashcard" data-panel="Resolved"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">RESOLVIDOS <span id="dashResolvedCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashResolved"></div></article><article class="dashcard" data-panel="Transferred"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">TRANSFERIDOS AO SISTEMA <span id="dashTransferredCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashTransferred"></div></article></div><div class="warn">Esta é uma visão dos atendimentos salvos neste navegador. Não representa filas, prioridades, atribuições nem tempos reais do Assyst. Protótipo: não insira dados pessoais reais.</div></section>
 <section id="view-form"><div class="panel assyst-form"><div class="layout-tools"><button type="button" id="resetFields" hidden title="Redefinir a ordem dos campos" aria-label="Redefinir a ordem dos campos">↺</button><button type="button" id="editFields" class="form-edit-toggle" aria-pressed="false" aria-controls="ticketForm" aria-label="Editar layout dos campos" title="Editar layout dos campos">✎</button></div><div class="row between"><h2 id="formTitle">Novo atendimento</h2><span class="hint" id="layoutHint" hidden>Arraste os campos pelo símbolo ⠿. A página rola ao aproximar o cursor das bordas.</span><span class="hint" id="stamp"></span></div><form id="ticketForm" autocomplete="off"><div class="assyst-main" data-field-zone="main">
 <div class="user"><div class="field"><label for="f-nome">Usuário afetado</label><input id="f-nome" name="nome" maxlength="180" list="savedPeopleList"><datalist id="savedPeopleList"></datalist><div class="contact-lookup"><button type="button" id="insertSamplePeople" title="Adicionar 6 pessoas fictícias ao cadastro local">+ Inserir 6 pessoas de exemplo</button><span id="contactLookupHint" class="hint" aria-live="polite">Selecione um nome para preencher automaticamente.</span></div></div></div><div class="phone"><div class="field"><label for="f-telefone">Telefone</label><input id="f-telefone" name="telefone" maxlength="50"></div></div><div class="ramal"><div class="field"><label for="f-ramal">Ramal</label><input id="f-ramal" name="ramal" maxlength="30"></div></div>
@@ -175,7 +175,31 @@ html[data-theme="dark"] #view-dashboard .dash-panel-tools:not([hidden]){backgrou
  <div class="row"><button type="button" class="primary" id="txtCopyPreview">Copiar todo o texto</button></div>
  </dialog>
 <section id="view-scripts" class="hide"><div class="panel"><h2>Base de Conhecimento</h2><p class="hint">Os modelos são exemplos da documentação enviada. Valide conteúdo, contatos e bases com a operação antes do uso oficial.</p><div class="row"><input id="scriptSearch" placeholder="Filtrar por texto ou base de conhecimento"></div><div id="scriptArea"></div></div></section>
-<section id="view-backup" class="hide"><div class="panel"><h2>Cópia de segurança</h2><p>Os registros ficam neste navegador, sem senha e sem criptografia. Limpar os dados do navegador pode apagá-los. Faça cópias de segurança somente com dados fictícios durante os testes.</p><div class="row"><button class="primary" id="exportBtn">Baixar backup (sem criptografia)</button><button id="importBtn">Restaurar backup</button><input type="file" id="importFile" accept=".json,application/json" class="hide"></div><div class="warn">A restauração substitui os registros atuais. O backup desta versão é legível e não deve conter dados pessoais reais. Backups antigos criptografados exigem a senha anterior apenas para restauração.</div><p class="hint">Os modelos da base são mantidos no arquivo base-de-conhecimento.js e não contêm os nomes, CPFs e telefones de casos específicos do exemplo.</p></div></section>
+<section id="view-backup" class="hide"><div class="panel transfer-panel">
+<h2>Importar e exportar dados</h2>
+<p class="hint">Transfira seus registros entre navegadores ou guarde uma cópia local. O arquivo JSON contém dados legíveis e não é criptografado. Utilize somente dados autorizados para armazenamento local.</p>
+<div class="transfer-grid">
+ <div class="transfer-option"><h3>Exportar dados</h3><p>Escolha o conteúdo que deseja salvar em um arquivo .json.</p>
+ <label><input type="checkbox" id="exTickets" checked> Chamados e atendimentos</label>
+ <label><input type="checkbox" id="exContacts" checked> Pessoas e dados de contato</label>
+ <label><input type="checkbox" id="exKnowledge" checked> Base de conhecimento e histórico de modelos</label>
+ <label><input type="checkbox" id="exSettings" checked> Configurações, painéis, campos e tema</label>
+ <button class="primary" id="exportBtn" type="button">↓ Exportar selecionados</button></div>
+ <div class="transfer-option"><h3>Importar dados</h3><p>Selecione um arquivo exportado anteriormente. Você poderá escolher o que recuperar.</p>
+ <button id="importBtn" type="button">↑ Selecionar arquivo JSON</button>
+ <input type="file" id="importFile" accept=".json,application/json" class="hide">
+ <div id="importOptions" hidden>
+ <p id="importSummary" class="hint"></p>
+ <label><input type="checkbox" id="imTickets"> Chamados e atendimentos</label>
+ <label><input type="checkbox" id="imContacts"> Pessoas e dados de contato</label>
+ <label><input type="checkbox" id="imKnowledge"> Base de conhecimento</label>
+ <label><input type="checkbox" id="imSettings"> Configurações</label>
+ <button type="button" class="primary" id="importConfirm">Confirmar importação</button>
+ <button type="button" id="importCancel">Cancelar</button></div></div>
+</div>
+<div class="warn">A importação <strong>substitui apenas as categorias selecionadas</strong> e solicita confirmação. Exporte os dados atuais antes de importar outros. A base padrão do aplicativo continua incluída no código.</div>
+<p class="hint">Arquivos antigos contendo somente chamados (inclusive versões criptografadas) também podem ser importados.</p>
+</div></section>
 </div></main><aside class="kb-side" id="kbSide" aria-label="Base de conhecimento"><h2>▣ Base de conhecimento • Sugestões</h2><p class="kb-small">Se houver um resumo, mostra modelos compatíveis. Sem resumo, mostra seus modelos recentes ou sugestões iniciais. O histórico é salvo apenas neste navegador.</p><input id="kbSearch" placeholder="Pesquisar: senha, PJe, pendenciamento..." aria-label="Pesquisar na base de conhecimento"><p class="kb-small" id="kbResultsLabel" aria-live="polite">Modelos sugeridos para começar</p><div id="kbResults"></div><div id="kbChosen" hidden><strong id="kbSelectedTitle"></strong><div class="kb-preview" id="kbPreview"></div><p class="kb-warn" id="kbMissing"></p><div class="kb-actions"><button class="primary" type="button" id="kbApply">Aplicar na descrição</button><button type="button" id="kbResolution">Aplicar na resolução</button><button type="button" id="kbCancel">Cancelar</button></div><p class="kb-small">Ao selecionar um modelo, o resumo e a descrição são ajustados juntos. O resumo muda automaticamente; só é solicitada confirmação quando a descrição preenchida será substituída. Nada é salvo sem clicar em Salvar atendimento.</p></div></aside></div>
 <script src="./base-de-conhecimento.js"></script>
 <script>
@@ -268,9 +292,9 @@ async function save(){localStorage.setItem(KEY,JSON.stringify({version:2,tickets
 function initialize(){
  try{const stored=localStorage.getItem(KEY);if(stored)data=validate(JSON.parse(stored));}
  catch(e){alert('Não foi possível carregar os registros locais. O armazenamento existente foi preservado.');locked=true;return}
- migratePanelAssignments();loadSavedContacts();importPeopleFromHistory();$('#app').hidden=false;$('#dashboardDate').value=localDay(new Date());$('#dateFilter').value=localDay(new Date());show('form');render();
+ loadKnowledgeSnapshot();migratePanelAssignments();loadSavedContacts();importPeopleFromHistory();$('#app').hidden=false;$('#dashboardDate').value=localDay(new Date());$('#dateFilter').value=localDay(new Date());show('form');render();
  if(localStorage.getItem(LEGACY_KEY)){
-  const p=document.createElement('div');p.className='warn';p.textContent='Há registros protegidos por senha de uma versão anterior neste navegador. Eles foram preservados e não são carregados automaticamente. Use a restauração do backup antigo, na aba Backup, se necessário.';
+  const p=document.createElement('div');p.className='warn';p.textContent='Há registros protegidos por senha de uma versão anterior neste navegador. Eles foram preservados e não são carregados automaticamente. Use a restauração do backup antigo, em Importar e exportar, se necessário.';
   $('#view-form').prepend(p);
  }
 }
@@ -642,18 +666,104 @@ function kbApply(field){
 $('#kbApply').onclick=()=>kbApply('descricao');$('#kbResolution').onclick=()=>kbApply('resolucao');$('#kbCancel').onclick=()=>{$('#kbChosen').hidden=true;kbSelected=null};$('#kbSearch').oninput=kbRender;$('#ticketForm').elements.namedItem('problema').addEventListener('input',()=>{$('#kbSearch').value='';kbSelected=null;$('#kbChosen').hidden=true;kbRender()});$('#ticketForm').elements.namedItem('descricao').addEventListener('input',()=>{if(kbSelected)kbPreview()});$('#ticketForm').addEventListener('input',e=>{if(kbSelected&&e.target.name!=='descricao')kbPreview()});kbRender();
 function renderScripts(){const q=$('#scriptSearch').value.toLowerCase();$('#scriptArea').replaceChildren();for(const [title,text] of scripts.filter(([a,b])=>(a+b).toLowerCase().includes(q))){const d=document.createElement('div');d.className='script';const r=document.createElement('div');r.className='row between';const strong=document.createElement('strong');strong.textContent=title;const b=document.createElement('button');b.textContent='Copiar texto';b.onclick=async()=>{try{await navigator.clipboard.writeText(text);b.textContent='Copiado'}catch{const ta=document.createElement('textarea');ta.value=text;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove();b.textContent='Copiado'}};r.append(strong,b);const pre=document.createElement('pre');pre.textContent=text;d.append(r,pre);$('#scriptArea').append(d)}}$('#scriptSearch').oninput=renderScripts;
 function download(name,content){const blob=new Blob([content],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-$('#exportBtn').onclick=async()=>{if(locked)return;try{await save();download('TJES_backup_SEM_CRIPTOGRAFIA_'+new Date().toISOString().slice(0,10)+'.json',localStorage.getItem(KEY))}catch{alert('Falha ao exportar')}};
+const TRANSFER_KB_KEY='tjes_kb_custom_snapshot_v1';
+let pendingImport=null;
+function knowledgeSnapshot(){return {scripts:scripts.map(x=>[...x]),tags:KB_TAGS.map(x=>[x[0],Array.isArray(x[1])?[...x[1]]:[]]),resolutions:{...KB_RESOLUTIONS},summaries:{...KB_SUMMARIES},recent:kbRecents()}}
+function applyKnowledge(snapshot){
+ if(!snapshot||!Array.isArray(snapshot.scripts)||!Array.isArray(snapshot.tags)||!snapshot.resolutions||!snapshot.summaries)throw Error('Base inválida');
+ if(snapshot.scripts.length>3000||snapshot.tags.length>3000||snapshot.scripts.some(x=>!Array.isArray(x)||x.length!==2||x.some(v=>typeof v!=='string'||v.length>20000)))throw Error('Base inválida');
+ const old=knowledgeSnapshot();
+ try{
+  localStorage.setItem(TRANSFER_KB_KEY,JSON.stringify(snapshot));
+  scripts.splice(0,scripts.length,...snapshot.scripts);
+  KB_TAGS.splice(0,KB_TAGS.length,...snapshot.tags);
+  for(const k of Object.keys(KB_RESOLUTIONS))delete KB_RESOLUTIONS[k];
+  for(const k of Object.keys(KB_SUMMARIES))delete KB_SUMMARIES[k];
+  Object.assign(KB_RESOLUTIONS,snapshot.resolutions);
+  Object.assign(KB_SUMMARIES,snapshot.summaries);
+  if(Array.isArray(snapshot.recent))localStorage.setItem(KB_RECENTS_KEY,JSON.stringify(snapshot.recent.filter(v=>typeof v==='string').slice(0,8)));
+ }catch(e){scripts.splice(0,scripts.length,...old.scripts);KB_TAGS.splice(0,KB_TAGS.length,...old.tags);Object.assign(KB_RESOLUTIONS,old.resolutions);Object.assign(KB_SUMMARIES,old.summaries);throw e}
+}
+function loadKnowledgeSnapshot(){
+ try{const saved=localStorage.getItem(TRANSFER_KB_KEY);if(saved)applyKnowledge(JSON.parse(saved))}catch{localStorage.removeItem(TRANSFER_KB_KEY)}
+}
+function selectedSections(prefix){return ['Tickets','Contacts','Knowledge','Settings'].filter(s=>$('#'+prefix+s).checked).map(s=>s.toLowerCase())}
+function buildExport(sections){
+ const payload={format:'tjes-contingencia-transfer',version:3,exportedAt:new Date().toISOString(),sections:{}};
+ if(sections.includes('tickets'))payload.sections.tickets=structuredClone(data.tickets);
+ if(sections.includes('contacts'))payload.sections.contacts=structuredClone(savedContacts);
+ if(sections.includes('knowledge'))payload.sections.knowledge=knowledgeSnapshot();
+ if(sections.includes('settings'))payload.sections.settings={
+  panels:structuredClone(panelState),
+  fields:localStorage.getItem(FIELD_ORDER_KEY),
+  theme:localStorage.getItem(THEME_KEY)
+ };
+ return payload
+}
+$('#exportBtn').onclick=()=>{
+ if(locked)return;const selection=selectedSections('ex');if(!selection.length){alert('Selecione pelo menos uma categoria.');return}
+ try{download('TJES_dados_'+localDay(new Date())+'.json',JSON.stringify(buildExport(selection),null,2))}
+ catch{alert('Não foi possível gerar o arquivo.')}
+};
 $('#importBtn').onclick=()=>$('#importFile').click();
-$('#importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{
- const obj=JSON.parse(await file.text());let restored;
- if(obj.version===2){restored=validate(obj)}
- else if(obj.version===1&&obj.cipher&&obj.iv&&obj.salt){
-  const pw=prompt('Este backup é da versão anterior. Digite a senha antiga para restaurá-lo:');if(!pw)return;
-  const s=un64(obj.salt),k=await derive(pw,s),buf=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(obj.iv)},k,un64(obj.cipher));restored=validate(JSON.parse(dec.decode(buf)));
- }else throw Error('Formato de arquivo desconhecido');
- if(!confirm('Substituir os registros desta versão pelos registros do backup?'))return;
- const previous=data;data={tickets:restored.tickets};try{await save()}catch(err){data=previous;throw err}
- clearForm();render();alert('Backup restaurado. ATENÇÃO: nesta versão os registros ficam sem criptografia.');
- }catch(err){alert('Não foi possível restaurar o backup. Arquivo inválido ou senha incorreta. Os registros atuais foram preservados.')}finally{e.target.value=''}};
+function showImportOptions(sections,label){
+ pendingImport=sections;
+ $('#importOptions').hidden=false;$('#importSummary').textContent=label;
+ for(const name of ['Tickets','Contacts','Knowledge','Settings']){
+  const el=$('#im'+name),available=Object.hasOwn(sections,name.toLowerCase());
+  el.disabled=!available;el.checked=available;
+ }
+}
+$('#importFile').onchange=async e=>{
+ const file=e.target.files?.[0];e.target.value='';if(!file)return;
+ pendingImport=null;$('#importOptions').hidden=true;
+ try{
+  if(file.size>120*1024*1024)throw Error('Arquivo muito grande');
+  const obj=JSON.parse(await file.text());let sections;
+  if(obj.format==='tjes-contingencia-transfer'&&obj.version===3&&obj.sections&&typeof obj.sections==='object')sections=obj.sections;
+  else if(obj.version===2){sections={tickets:validate(obj).tickets}}
+  else if(obj.version===1&&obj.cipher&&obj.iv&&obj.salt){
+   const pw=prompt('Arquivo antigo criptografado. Digite a senha usada anteriormente:');if(!pw)return;
+   const key=await derive(pw,un64(obj.salt));
+   const buf=await crypto.subtle.decrypt({name:'AES-GCM',iv:un64(obj.iv)},key,un64(obj.cipher));
+   sections={tickets:validate(JSON.parse(dec.decode(buf))).tickets};
+  }else throw Error('Formato desconhecido');
+  if(Object.keys(sections).length===0)throw Error('Arquivo vazio');
+  showImportOptions(sections,'Arquivo: '+file.name+' • Selecione as categorias que deseja importar.');
+ }catch{alert('Arquivo incompatível ou inválido. Nenhum dado foi alterado.')}
+};
+$('#importCancel').onclick=()=>{pendingImport=null;$('#importOptions').hidden=true};
+$('#importConfirm').onclick=()=>{
+ if(!pendingImport)return;
+ const selected=selectedSections('im');if(!selected.length){alert('Selecione pelo menos uma categoria.');return}
+ try{
+  const p=pendingImport;
+  if(selected.includes('tickets'))validate({tickets:p.tickets});
+  if(selected.includes('contacts')&&(!Array.isArray(p.contacts)||p.contacts.length>50000||p.contacts.some(c=>!c||typeof c.nome!=='string')))throw Error('Contatos inválidos');
+  if(selected.includes('settings')&&(!p.settings||typeof p.settings!=='object'))throw Error('Configurações inválidas');
+  if(selected.includes('knowledge')&&(!p.knowledge||!Array.isArray(p.knowledge.scripts)))throw Error('Base inválida');
+  if(!confirm('Importar '+selected.length+' categoria(s)? Os dados atuais dessas categorias serão SUBSTITUÍDOS. Faça uma exportação prévia para preservar o conteúdo existente.'))return;
+  // Prepara e salva o conjunto em armazenamento local antes de atualizar a interface.
+  const prior={tickets:data.tickets,contacts:savedContacts,knowledge:localStorage.getItem(TRANSFER_KB_KEY),panels:localStorage.getItem(PANEL_SETTINGS_KEY),fields:localStorage.getItem(FIELD_ORDER_KEY),theme:localStorage.getItem(THEME_KEY)};
+  try{
+   if(selected.includes('tickets')){const incoming=p.tickets.map(t=>({...t}));localStorage.setItem(KEY,JSON.stringify({version:2,tickets:incoming}));data={tickets:incoming}}
+   if(selected.includes('contacts')){localStorage.setItem(CONTACTS_KEY,JSON.stringify(p.contacts));savedContacts=p.contacts.map(c=>({...c}));refreshSavedPeople()}
+   if(selected.includes('knowledge'))applyKnowledge(p.knowledge);
+   if(selected.includes('settings')){
+    const s=p.settings;
+    if(s.panels&&Array.isArray(s.panels.visible)&&Array.isArray(s.panels.custom))localStorage.setItem(PANEL_SETTINGS_KEY,JSON.stringify(s.panels));
+    if(typeof s.fields==='string')localStorage.setItem(FIELD_ORDER_KEY,s.fields);
+    if(s.theme==='dark'||s.theme==='light')localStorage.setItem(THEME_KEY,s.theme);
+   }
+  }catch(e){
+   data={tickets:prior.tickets};savedContacts=prior.contacts;
+   for(const [k,v] of [[KEY,JSON.stringify({version:2,tickets:prior.tickets})],[CONTACTS_KEY,JSON.stringify(prior.contacts)],[TRANSFER_KB_KEY,prior.knowledge],[PANEL_SETTINGS_KEY,prior.panels],[FIELD_ORDER_KEY,prior.fields],[THEME_KEY,prior.theme]]){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch{}}
+   throw e;
+  }
+  pendingImport=null;$('#importOptions').hidden=true;
+  alert('Importação concluída. A página será recarregada para aplicar todas as configurações.');
+  location.reload();
+ }catch{alert('Não foi possível importar. Confira a integridade do arquivo e o espaço do navegador.')}
+};
 initialize();
 </script></body></html>
