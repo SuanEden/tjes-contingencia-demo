@@ -213,20 +213,7 @@ function importPeopleFromHistory(){
 }
 function refreshSavedPeople(){const list=$('#savedPeopleList');if(!list)return;list.replaceChildren();for(const c of [...savedContacts].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'))){const opt=document.createElement('option');opt.value=c.nome;const context=[c.secao,c.ramal,c.telefone].filter(Boolean).join(' · ');opt.label=context;list.append(opt)}}
 function saveContactFromTicket(ticket){const name=String(ticket.nome||'').trim();if(!name)return;const idx=savedContacts.findIndex(c=>contactKey(c.nome)===contactKey(name));const existing=idx<0?{}:savedContacts[idx];const profile={...existing,nome:name};for(const field of CONTACT_FIELDS){if(field==='nome')continue;const value=String(ticket[field]||'').trim();if(value)profile[field]=value}profile.savedAt=new Date().toISOString();const next=[...savedContacts];if(idx>=0)next.splice(idx,1);next.unshift(profile);try{localStorage.setItem(CONTACTS_KEY,JSON.stringify(next));savedContacts=next;refreshSavedPeople();return true}catch{return false}}
-function fillSavedPerson(){
- const f=$('#ticketForm'),name=f.elements.namedItem('nome').value.trim();
- const match=savedContacts.find(c=>contactKey(c.nome)===contactKey(name));
- if(!match)return false;
- let filled=0;
- for(const field of CONTACT_FIELDS){
-  if(field==='nome')continue;
-  const el=f.elements.namedItem(field);
-  if(el&&match[field]&&!el.value.trim()){el.value=match[field];filled++}
- }
- $('#contactLookupHint').textContent=filled?'Dados atualizados para '+match.nome+' ('+filled+' campos). Confira antes de salvar.':'Pessoa selecionada: '+match.nome+'. Confira os dados.';
- return true;
-}
-// Os campos de contato pertencem à pessoa selecionada: nunca carregar dados de outra pessoa.
+// Campos vinculados à identidade da pessoa: jamais manter dados do cadastro anterior.
 let lastAutoContact='';
 function clearPreviousPersonFields(){
  const form=$('#ticketForm');
@@ -238,12 +225,21 @@ function clearPreviousPersonFields(){
 }
 function autoFillContact(){
  const name=$('#f-nome').value.trim(),key=contactKey(name);
- // Ao trocar um nome já selecionado, zere todos os dados ligados à pessoa anterior.
- if(lastAutoContact&&key!==lastAutoContact){clearPreviousPersonFields();lastAutoContact=''}
+ if(key===lastAutoContact)return;
+ // Limpa sempre que o nome mudar, mesmo que a pessoa anterior não fosse cadastrada.
+ clearPreviousPersonFields();
+ lastAutoContact=key;
  if(!name){$('#contactLookupHint').textContent='Selecione um nome para preencher automaticamente.';return}
- const found=savedContacts.some(c=>contactKey(c.nome)===key);
- if(!found){$('#contactLookupHint').textContent='Pessoa ainda não selecionada. Os dados da pessoa anterior foram limpos.';return}
- if(key!==lastAutoContact){lastAutoContact=key;fillSavedPerson()}
+ const match=savedContacts.find(c=>contactKey(c.nome)===key);
+ if(!match){$('#contactLookupHint').textContent='Pessoa não cadastrada. Preencha os dados dela para salvá-los com o chamado.';return}
+ let filled=0;
+ const form=$('#ticketForm');
+ for(const field of CONTACT_FIELDS){
+  if(field==='nome')continue;
+  const el=form.elements.namedItem(field);
+  if(el&&match[field]){el.value=match[field];filled++}
+ }
+ $('#contactLookupHint').textContent='Dados de '+match.nome+' recuperados ('+filled+' campos). Confirme se estão corretos.';
 }
 $('#f-nome').addEventListener('input',autoFillContact);
 $('#f-nome').addEventListener('change',autoFillContact);
@@ -408,7 +404,7 @@ $('#txtClearSelection').onclick=()=>{selectedTxtTicketIds.clear();document.query
 $('#txtToggleVisible').onchange=e=>{document.querySelectorAll('#rows .txt-ticket-check').forEach(cb=>{cb.checked=e.target.checked;if(cb.checked)selectedTxtTicketIds.add(cb.dataset.id);else selectedTxtTicketIds.delete(cb.dataset.id)});updateTxtSelected()};
 function render(){if(locked)return;renderDashboard();const q=$('#search').value.trim().toLowerCase(),date=$('#dateFilter').value;const items=data.tickets.filter(t=>(!date||new Date(t.created).toLocaleDateString('en-CA')===date)&&[t.chamado,t.nome,t.problema,t.telefone,t.status].some(v=>(v||'').toLowerCase().includes(q))).sort((a,b)=>b.created.localeCompare(a.created));$('#rows').replaceChildren();$('#count').textContent=items.length+' registro(s)';for(const t of items){const tr=document.createElement('tr');const tdSelect=document.createElement('td');const cb=document.createElement('input');cb.type='checkbox';cb.className='txt-ticket-check';cb.dataset.id=t.id;cb.setAttribute('aria-label','Selecionar chamado '+(t.chamado||t.problema||'sem protocolo'));cb.checked=selectedTxtTicketIds.has(t.id);cb.onchange=()=>{if(cb.checked)selectedTxtTicketIds.add(t.id);else selectedTxtTicketIds.delete(t.id);updateTxtSelected()};tdSelect.append(cb);tr.append(tdSelect);for(const x of [new Date(t.created).toLocaleString('pt-BR'),t.chamado,t.nome,t.problema,t.status]){const td=document.createElement('td');td.textContent=x||'—';tr.append(td)}const act=document.createElement('td');const edit=document.createElement('button');edit.textContent='Editar';edit.onclick=()=>{editing=t.id;const f=$('#ticketForm');for(const [k,v] of Object.entries(t))if(f.elements.namedItem(k))f.elements.namedItem(k).value=v;$('#formTitle').textContent='Editar atendimento';$('#stamp').textContent='Criado em '+new Date(t.created).toLocaleString('pt-BR');setTicketFormStatus(t);show('form')};const del=document.createElement('button');del.textContent='Excluir';del.className='danger';del.onclick=async()=>{if(confirm('Excluir este registro permanentemente?')){const previous=data.tickets;data.tickets=previous.filter(x=>x.id!==t.id);try{await save();render()}catch{data.tickets=previous;alert('Não foi possível excluir')}}};const copy=document.createElement('button');copy.type='button';copy.textContent='Copiar texto';copy.title='Copiar o atendimento para colar no sistema';copy.onclick=()=>copyTicketForPaste(t);act.append(edit,document.createTextNode(' '),copy,document.createTextNode(' '),del);tr.append(act);$('#rows').append(tr)}updateTxtSelected()}function localDay(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function sameDay(ticket,day){return localDay(new Date(ticket.created))===day}
-function editTicket(t){editing=t.id;lastAutoContact=contactKey(t.nome);$('#contactLookupHint').textContent='Ao trocar a pessoa, os dados de contato anteriores serão substituídos.';const f=$('#ticketForm');for(const [k,v] of Object.entries(t))if(f.elements.namedItem(k))f.elements.namedItem(k).value=v;$('#formTitle').textContent='Editar atendimento';$('#stamp').textContent='Criado em '+new Date(t.created).toLocaleString('pt-BR');setTicketFormStatus(t);show('form')}
+function editTicket(t){editing=t.id;lastAutoContact=contactKey(t.nome);$('#contactLookupHint').textContent='Dados deste chamado carregados. Ao alterar o nome, os dados de contato serão limpos.';const f=$('#ticketForm');for(const [k,v] of Object.entries(t))if(f.elements.namedItem(k))f.elements.namedItem(k).value=v;$('#formTitle').textContent='Editar atendimento';$('#stamp').textContent='Criado em '+new Date(t.created).toLocaleString('pt-BR');setTicketFormStatus(t);show('form')}
 // Arrastar um atendimento altera seu status; arrastar o cabeçalho continua trocando as caixas.
 const ticketStatusForPanel={All:'Registrado',Pending:'Pendente',Resolved:'Resolvido',Transferred:'Transferido ao sistema oficial'};
 const PANEL_SETTINGS_KEY='tjes_panels_custom_v1',FIELD_ORDER_KEY='tjes_field_order_v1';
