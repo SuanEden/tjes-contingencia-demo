@@ -15,7 +15,7 @@
 <section id="view-list" class="hide"><div class="panel"><div class="row between"><h2>Atendimentos registrados</h2><span class="hint" id="count"></span></div><div class="row"><input style="max-width:360px" id="search" placeholder="Pesquisar nome, protocolo ou problema"><input id="dateFilter" type="date" style="max-width:180px"><button id="showAll">Todas as datas</button></div><div class="tablewrap" style="margin-top:15px"><table><thead><tr><th>Data/hora</th><th>Chamado</th><th>Nome</th><th>Problema</th><th>Status</th><th>Ações</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
 <section id="view-scripts" class="hide"><div class="panel"><h2>Scripts e modelos de tratativas</h2><p class="hint">Os modelos são exemplos da documentação enviada. Valide conteúdo, contatos e bases com a operação antes do uso oficial.</p><div class="row"><input id="scriptSearch" placeholder="Filtrar por texto ou base de conhecimento"></div><div id="scriptArea"></div></div></section>
 <section id="view-backup" class="hide"><div class="panel"><h2>Cópia de segurança</h2><p>Os registros ficam neste navegador, sem senha e sem criptografia. Limpar os dados do navegador pode apagá-los. Faça cópias de segurança somente com dados fictícios durante os testes.</p><div class="row"><button class="primary" id="exportBtn">Baixar backup (sem criptografia)</button><button id="importBtn">Restaurar backup</button><input type="file" id="importFile" accept=".json,application/json" class="hide"></div><div class="warn">A restauração substitui os registros atuais. O backup desta versão é legível e não deve conter dados pessoais reais. Backups antigos criptografados exigem a senha anterior apenas para restauração.</div><p class="hint">Os scripts do modelo são incorporados ao programa e não contêm os nomes, CPFs e telefones de casos específicos do exemplo.</p></div></section>
-</div></main><aside class="kb-side" id="kbSide" aria-label="Base de conhecimento"><h2>▣ Base de conhecimento • Sugestões</h2><p class="kb-small">Sugestões baseadas no resumo. Clique em uma sugestão para preencher a descrição. Se faltar informação, o sistema mostra o modelo para conferência.</p><input id="kbSearch" placeholder="Pesquisar: senha, PJe, pendenciamento..." aria-label="Pesquisar na base de conhecimento"><div id="kbResults"></div><div id="kbChosen" hidden><strong id="kbSelectedTitle"></strong><div class="kb-preview" id="kbPreview"></div><p class="kb-warn" id="kbMissing"></p><div class="kb-actions"><button class="primary" type="button" id="kbApply">Aplicar na descrição</button><button type="button" id="kbResolution">Aplicar na resolução</button><button type="button" id="kbCancel">Cancelar</button></div><p class="kb-small">Ao clicar em um modelo completo, a descrição é preenchida. Se já existir texto, será solicitada confirmação. Nada é salvo sem clicar em Salvar atendimento.</p></div></aside></div>
+</div></main><aside class="kb-side" id="kbSide" aria-label="Base de conhecimento"><h2>▣ Base de conhecimento • Sugestões</h2><p class="kb-small">Sugestões baseadas no resumo. Clique em uma sugestão para preencher a descrição. Se faltar informação, o sistema mostra o modelo para conferência.</p><input id="kbSearch" placeholder="Pesquisar: senha, PJe, pendenciamento..." aria-label="Pesquisar na base de conhecimento"><div id="kbResults"></div><div id="kbChosen" hidden><strong id="kbSelectedTitle"></strong><div class="kb-preview" id="kbPreview"></div><p class="kb-warn" id="kbMissing"></p><div class="kb-actions"><button class="primary" type="button" id="kbApply">Aplicar na descrição</button><button type="button" id="kbResolution">Aplicar na resolução</button><button type="button" id="kbCancel">Cancelar</button></div><p class="kb-small">Ao selecionar um modelo, o resumo e a descrição são ajustados juntos. Se já houver conteúdo diferente, o sistema pede confirmação. Nada é salvo sem clicar em Salvar atendimento.</p></div></aside></div>
 <script>
 'use strict';
 const KEY='tjes_offline_plain_v05'; // mantém os registros já salvos na v0.5
@@ -89,7 +89,42 @@ function kbFill(text){const fields=kbFormValues();const replacements={ATENDENTE:
 function kbCandidates(){const fields=kbFormValues();const query=kbNormalize($('#kbSearch').value);const summary=kbNormalize(fields.problema);const ranked=scripts.map(([title,txt],index)=>{const tags=KB_TAGS.find(x=>x[0]===title)?.[1]||[];const hits=tags.filter(tag=>summary.includes(kbNormalize(tag))).length;const manual=query&&(kbNormalize(title+' '+txt+' '+tags.join(' ')).includes(query));return {title,txt,index,hits,manual}});if(query)return ranked.filter(x=>x.manual).sort((a,b)=>b.hits-a.hits).slice(0,12);const matches=ranked.filter(x=>x.hits>0).sort((a,b)=>b.hits-a.hits);return matches.length?matches.slice(0,8):ranked.filter(x=>/SATE|Pendenciamento|PJEOffice/.test(x.title)).slice(0,6)}
 function kbRender(){const area=$('#kbResults');area.replaceChildren();for(const item of kbCandidates()){const b=document.createElement('button');b.className='kb-option';b.type='button';const strong=document.createElement('strong');strong.textContent=item.title;const sub=document.createElement('small');sub.textContent=item.hits?item.hits+' palavra(s)-chave correspondente(s)':'Modelo disponível';b.append(strong,sub);b.onclick=()=>{kbSelected=item;kbPreview();show('form');kbApply('descricao');kbRender()};area.append(b)}if(!area.childElementCount)area.textContent='Nenhum modelo encontrado.'}
 function kbPreview(){if(!kbSelected)return;const result=kbFill(kbSelected.txt);$('#kbChosen').hidden=false;$('#kbSelectedTitle').textContent=kbSelected.title;$('#kbPreview').textContent=result.rendered;$('#kbMissing').textContent=result.missing.length?'Campos sem dados serão mantidos como marcadores: '+[...new Set(result.missing)].map(x=>'['+x+']').join(', '):''}
-function kbApply(field){if(!kbSelected)return;const target=$('#ticketForm').elements.namedItem(field);if(!target)return;const {rendered,missing}=kbFill(kbSelected.txt);if(target.value.trim()&&!confirm('Substituir o conteúdo atual de '+(field==='descricao'?'Descrição':'Resolução')+'?'))return;target.value=rendered;target.dispatchEvent(new Event('input',{bubbles:true}));$('#kbChosen').hidden=true;kbSelected=null;target.focus()}
+// Resumos curtos alinhados aos modelos existentes, sem afirmar ações não comprovadas.
+const KB_SUMMARIES={
+'Recebendo — início':'Atendimento telefônico recebido',
+'Recebendo — fim':'Encerramento de ligação recebida',
+'Retornando — início':'Contato telefônico de retorno',
+'Retornando — fim':'Encerramento de ligação de retorno',
+'Pendenciamento — 3 dias':'Tentativa de contato — pendenciamento por 3 dias úteis',
+'Pendenciamento — 2 dias':'Tentativa de contato — pendenciamento por 2 dias úteis',
+'Pendenciamento — 1 dia':'Tentativa de contato — pendenciamento por 1 dia útil',
+'SATE0375 — encerramento sem retorno':'Encerramento por falta de retorno — SATE0375',
+'SATE0013 — reset de senha IDM':'Reset de senha no IDM — SATE0013',
+'SATE0211 — desbloqueio por intrusão':'Desbloqueio por intrusão no IDM — SATE0211',
+'SATE0903 — PJEOffice indisponível':'Erro PJEOffice Indisponível — SATE0903',
+'PJEOffice — Assyst':'Erro PJEOffice Indisponível',
+'PJEOffice — E-mail':'Envio de procedimento para PJEOffice Indisponível',
+'Cadastro de estagiário exonerado':'Pendência cadastral de estagiário — situação exonerado'
+};
+function kbApply(field){
+ if(!kbSelected)return;
+ const form=$('#ticketForm'),target=form.elements.namedItem(field),summary=form.elements.namedItem('problema');
+ if(!target||!summary)return;
+ const {rendered}=kbFill(kbSelected.txt);
+ const newSummary=KB_SUMMARIES[kbSelected.title]||kbSelected.title;
+ const replacingText=target.value.trim()&&target.value!==rendered;
+ const replacingSummary=summary.value.trim()&&summary.value!==newSummary;
+ if((replacingText||replacingSummary)&&!confirm('Aplicar o modelo selecionado e substituir '+(replacingText&&replacingSummary?'o resumo e o conteúdo atual':replacingSummary?'o resumo atual':'o conteúdo atual')+'?'))return;
+ // Atualizar ambos na mesma ação. O listener do resumo limpa a sugestão anterior.
+ target.value=rendered;
+ summary.value=newSummary;
+ summary.dispatchEvent(new Event('input',{bubbles:true}));
+ target.dispatchEvent(new Event('input',{bubbles:true}));
+ kbSelected=null;
+ $('#kbChosen').hidden=true;
+ kbRender();
+ target.focus();
+}
 $('#kbApply').onclick=()=>kbApply('descricao');$('#kbResolution').onclick=()=>kbApply('resolucao');$('#kbCancel').onclick=()=>{$('#kbChosen').hidden=true;kbSelected=null};$('#kbSearch').oninput=kbRender;$('#ticketForm').elements.namedItem('problema').addEventListener('input',()=>{$('#kbSearch').value='';kbSelected=null;$('#kbChosen').hidden=true;kbRender()});$('#ticketForm').elements.namedItem('descricao').addEventListener('input',()=>{if(kbSelected)kbPreview()});$('#ticketForm').addEventListener('input',e=>{if(kbSelected&&e.target.name!=='descricao')kbPreview()});kbRender();
 function renderScripts(){const q=$('#scriptSearch').value.toLowerCase();$('#scriptArea').replaceChildren();for(const [title,text] of scripts.filter(([a,b])=>(a+b).toLowerCase().includes(q))){const d=document.createElement('div');d.className='script';const r=document.createElement('div');r.className='row between';const strong=document.createElement('strong');strong.textContent=title;const b=document.createElement('button');b.textContent='Copiar texto';b.onclick=async()=>{try{await navigator.clipboard.writeText(text);b.textContent='Copiado'}catch{const ta=document.createElement('textarea');ta.value=text;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove();b.textContent='Copiado'}};r.append(strong,b);const pre=document.createElement('pre');pre.textContent=text;d.append(r,pre);$('#scriptArea').append(d)}}$('#scriptSearch').oninput=renderScripts;
 function download(name,content){const blob=new Blob([content],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
