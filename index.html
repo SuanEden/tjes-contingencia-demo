@@ -240,9 +240,23 @@ function ticketPasteText(t,index){
 }
 function ticketsTxtContent(items){
  const dates=[...new Set(items.map(t=>localDay(new Date(t.created))))];
- const heading=dates.length===1?'ATENDIMENTOS DO DIA: '+dates[0].split('-').reverse().join('/'):'ATENDIMENTOS REGISTRADOS';
- const separator='-'.repeat(65);
- return [heading,separator,'',...items.flatMap((t,i)=>[ticketPasteText(t,i+1),'',separator,''])].join('\n');
+ const heading=dates.length===1?'RELATÓRIO DE ATENDIMENTOS — '+dates[0].split('-').reverse().join('/'):'RELATÓRIO DE ATENDIMENTOS — PERÍODO SELECIONADO';
+ const separator='='.repeat(61),divider='-'.repeat(61);
+ const count={pending:0,resolved:0,transferred:0,other:0};
+ for(const t of items){
+  if(t.status==='Pendente')count.pending++;
+  else if(t.status==='Resolvido')count.resolved++;
+  else if(t.status==='Transferido ao sistema oficial')count.transferred++;
+  else count.other++;
+ }
+ const summary=[
+  heading,separator,
+  'TOTAL DE ATENDIMENTOS: '+items.length,
+  'Pendentes: '+count.pending+'  |  Resolvidos: '+count.resolved,
+  'Transferidos: '+count.transferred+'  |  Outros/registrados: '+count.other,
+  divider,''
+ ];
+ return [...summary,...items.flatMap((t,i)=>[ticketPasteText(t,i+1),'',divider,''])].join('\n');
 }
 function exportTicketsTxt(items,name){
  if(!items.length){alert('Não há atendimentos para baixar.');return}
