@@ -294,7 +294,7 @@ function initialize(){
  catch(e){alert('Não foi possível carregar os registros locais. O armazenamento existente foi preservado.');locked=true;return}
  loadKnowledgeSnapshot();migratePanelAssignments();loadSavedContacts();importPeopleFromHistory();$('#app').hidden=false;$('#dashboardDate').value=localDay(new Date());$('#dateFilter').value=localDay(new Date());show('form');render();
  if(localStorage.getItem(LEGACY_KEY)){
-  const p=document.createElement('div');p.className='warn';p.textContent='Há registros protegidos por senha de uma versão anterior neste navegador. Eles foram preservados e não são carregados automaticamente. Use a restauração do backup antigo, em Importar e exportar, se necessário.';
+  const p=document.createElement('div');p.className='warn';p.textContent='Há registros protegidos por senha de uma versão anterior neste navegador. Eles foram preservados e não são carregados automaticamente. Use a importação de arquivos antigos, na seção Importar e exportar, se necessário.';
   $('#view-form').prepend(p);
  }
 }
