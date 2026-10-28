@@ -155,7 +155,7 @@ html[data-theme="dark"] #view-dashboard .dashboard-edit-toggle[aria-pressed="tru
 #view-dashboard .dashcard[data-panel="All"] .dashbody{height:310px}
 html[data-theme="dark"] #view-dashboard .dash-panel-tools:not([hidden]){background:#1c3145;border-color:#37536a}
 @media(max-width:700px){#view-dashboard .dashheading>.row{padding-right:0;padding-top:35px}#view-dashboard .dashcard[data-panel="All"] .dashbody{height:275px}}
-.contact-lookup{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.contact-lookup button{font-size:12px;padding:6px 9px;white-space:normal}.contact-lookup .hint{font-size:11px;line-height:1.35}@media(max-width:550px){.contact-lookup{align-items:flex-start;flex-direction:column}}.transfer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.transfer-option{border:1px solid #c8d8e5;border-radius:10px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}.transfer-option h3{margin:0}.transfer-option p{font-size:13px;color:inherit;opacity:.8}.transfer-option label{display:flex;gap:8px;align-items:flex-start;font-size:13px}.transfer-option input[type=checkbox]{width:17px;min-width:17px;margin:2px 0}.transfer-option button{margin-top:6px}.transfer-option #importOptions{width:100%}.transfer-option #importOptions[hidden]{display:none}.transfer-option #importOptions label{margin:10px 0}html[data-theme="dark"] .transfer-option{border-color:#415c72}@media(max-width:800px){.transfer-grid{grid-template-columns:1fr}}</style></head><body>
+.contact-lookup{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.contact-lookup button{font-size:12px;padding:6px 9px;white-space:normal}.contact-lookup .hint{font-size:11px;line-height:1.35}@media(max-width:550px){.contact-lookup{align-items:flex-start;flex-direction:column}}.transfer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.transfer-option{border:1px solid #c8d8e5;border-radius:10px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}.transfer-option h3{margin:0}.transfer-option p{font-size:13px;color:inherit;opacity:.8}.transfer-option label{display:flex;gap:8px;align-items:flex-start;font-size:13px}.transfer-option input[type=checkbox]{width:17px;min-width:17px;margin:2px 0}.transfer-option button{margin-top:6px}.transfer-option #importOptions{width:100%}.transfer-option #importOptions[hidden]{display:none}.transfer-option #importOptions label{margin:10px 0}html[data-theme="dark"] .transfer-option{border-color:#415c72}@media(max-width:800px){.transfer-grid{grid-template-columns:1fr}}.knowledge-toolbar{display:flex;align-items:center;gap:12px;margin:14px 0}.knowledge-toolbar input{flex:1}.knowledge-toolbar button{white-space:nowrap}.knowledge-editor{padding:18px;border:1px solid #b5cbdc;border-radius:10px;background:#f3f8fc;margin:15px 0 24px}.knowledge-editor[hidden]{display:none}.knowledge-editor h3{margin:0}.knowledge-editor form{display:flex;flex-direction:column;gap:15px;margin-top:15px}.knowledge-editor .grid{grid-template-columns:1fr}.knowledge-editor textarea{min-height:100px}.knowledge-own-label{font-weight:500;font-size:10px;background:#dceef8;color:#215b7e;border-radius:20px;padding:4px 7px}.knowledge-summary{font-size:13px;margin:9px 0;color:#4b6576}html[data-theme="dark"] .knowledge-editor{background:#1a3145;border-color:#42647e}html[data-theme="dark"] .knowledge-own-label{background:#2a506b;color:#d9eeff}html[data-theme="dark"] .knowledge-summary{color:#bed4e6}@media(max-width:700px){.knowledge-toolbar{flex-wrap:wrap}.knowledge-toolbar button{width:100%}}</style></head><body>
 <div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Importar e exportar</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Protótipo sem senha — use somente dados fictícios até aprovação da TI</span></div><div class="row"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Ativar tema escuro" aria-pressed="false">☾ Tema escuro</button><span class="status">● Offline</span></div></header><div class="content">
 <section id="view-dashboard"><div class="row between dashheading"><div><span class="dash-eyebrow">VISÃO OPERACIONAL</span><h2>Atendimentos do dia</h2><span class="hint">Acompanhamento local de chamados • Sem integração com o Assyst</span></div><div class="row"><input type="date" id="dashboardDate" aria-label="Data dos atendimentos" style="width:170px"><button class="primary" id="dashboardNew">+ Novo atendimento</button><button id="dailyCopy">Copiar relatório do dia</button><button type="button" id="dashboardEditToggle" class="dashboard-edit-toggle" aria-label="Editar organização dos painéis" aria-pressed="false" title="Editar organização dos painéis">✎</button></div></div><div class="dash-overview" aria-label="Resumo de atendimentos do dia"><div class="dash-stat"><span class="dash-stat-label">Atendimentos pendentes</span><strong id="statPending">0</strong><span class="dash-stat-foot">Chamados aguardando atendimento</span></div><div class="dash-stat"><span class="dash-stat-label">Registrados no sistema</span><strong id="statTransferred">0</strong><span class="dash-stat-foot">Chamados encaminhados ao sistema oficial</span></div></div><div class="row dash-panel-toolbar"><div id="dashPanelTools" class="dash-panel-tools" hidden><button type="button" id="addPanel">+ Criar painel</button><button type="button" id="resetPanels">Restaurar painéis padrão</button><span class="hint">Arraste o título para reorganizar. Use × para remover um painel.</span></div></div><div class="dashgrid"><article class="dashcard" data-panel="All"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">ATENDIMENTOS REGISTRADOS <span id="dashAllCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashAll"></div></article><article class="dashcard" data-panel="Pending"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">PENDENTES <span id="dashPendingCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashPending"></div></article><article class="dashcard" data-panel="Resolved"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">RESOLVIDOS <span id="dashResolvedCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashResolved"></div></article><article class="dashcard" data-panel="Transferred"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">TRANSFERIDOS AO SISTEMA <span id="dashTransferredCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashTransferred"></div></article></div><div class="warn">Esta é uma visão dos atendimentos salvos neste navegador. Não representa filas, prioridades, atribuições nem tempos reais do Assyst. Protótipo: não insira dados pessoais reais.</div></section>
 <section id="view-form"><div class="panel assyst-form"><div class="layout-tools"><button type="button" id="resetFields" hidden title="Redefinir a ordem dos campos" aria-label="Redefinir a ordem dos campos">↺</button><button type="button" id="editFields" class="form-edit-toggle" aria-pressed="false" aria-controls="ticketForm" aria-label="Editar layout dos campos" title="Editar layout dos campos">✎</button></div><div class="row between"><h2 id="formTitle">Novo atendimento</h2><span class="hint" id="layoutHint" hidden>Arraste os campos pelo símbolo ⠿. A página rola ao aproximar o cursor das bordas.</span><span class="hint" id="stamp"></span></div><form id="ticketForm" autocomplete="off"><div class="assyst-main" data-field-zone="main">
@@ -174,7 +174,21 @@ html[data-theme="dark"] #view-dashboard .dash-panel-tools:not([hidden]){backgrou
  <textarea id="txtPreviewContent" readonly spellcheck="false" aria-label="Conteúdo TXT ampliado"></textarea>
  <div class="row"><button type="button" class="primary" id="txtCopyPreview">Copiar todo o texto</button></div>
  </dialog>
-<section id="view-scripts" class="hide"><div class="panel"><h2>Base de Conhecimento</h2><p class="hint">Os modelos são exemplos da documentação enviada. Valide conteúdo, contatos e bases com a operação antes do uso oficial.</p><div class="row"><input id="scriptSearch" placeholder="Filtrar por texto ou base de conhecimento"></div><div id="scriptArea"></div></div></section>
+<section id="view-scripts" class="hide"><div class="panel"><h2>Base de Conhecimento</h2><p class="hint">Os modelos são exemplos da documentação enviada. Valide conteúdo, contatos e bases com a operação antes do uso oficial.</p><div class="row knowledge-toolbar"><input id="scriptSearch" placeholder="Pesquisar por título, resumo ou conteúdo" aria-label="Pesquisar conhecimento"><button class="primary" type="button" id="newKnowledge">+ Novo conhecimento</button></div>
+<div id="knowledgeEditor" class="knowledge-editor" hidden>
+ <div class="row between"><h3 id="knowledgeEditorTitle">Novo conhecimento</h3><button type="button" id="cancelKnowledge" aria-label="Fechar editor">✕</button></div>
+ <form id="knowledgeForm">
+  <div class="grid">
+   <div class="field full"><label for="knowledgeTitle">Título do conhecimento *</label><input id="knowledgeTitle" maxlength="180" required placeholder="Ex.: Configurar certificado digital"></div>
+   <div class="field full"><label for="knowledgeSummary">Resumo para o chamado *</label><input id="knowledgeSummary" maxlength="400" required placeholder="Resumo que será utilizado no atendimento"></div>
+   <div class="field full"><label for="knowledgeTags">Palavras-chave (separadas por vírgula)</label><input id="knowledgeTags" maxlength="450" placeholder="certificado, acesso, assinatura"></div>
+   <div class="field full"><label for="knowledgeDescription">Descrição / procedimento *</label><textarea id="knowledgeDescription" rows="7" maxlength="20000" required placeholder="Modelo ou orientação que será aplicada na descrição do atendimento"></textarea></div>
+   <div class="field full"><label for="knowledgeResolution">Resolução / tratativa (opcional)</label><textarea id="knowledgeResolution" rows="4" maxlength="20000" placeholder="Procedimento para aplicar no campo Resolução"></textarea></div>
+  </div>
+  <div class="row"><button class="primary" type="submit" id="saveKnowledge">Salvar conhecimento</button><button type="button" id="discardKnowledge">Cancelar</button></div>
+  <p class="hint" id="knowledgeEditorHint">O conhecimento ficará salvo neste navegador e poderá ser exportado em Importar e exportar dados. Não inclua dados pessoais ou credenciais.</p>
+ </form>
+</div><div id="scriptArea"></div></div></section>
 <section id="view-backup" class="hide"><div class="panel transfer-panel">
 <h2>Importar e exportar dados</h2>
 <p class="hint">Transfira seus registros entre navegadores ou guarde uma cópia local. O arquivo JSON contém dados legíveis e não é criptografado. Utilize somente dados autorizados para armazenamento local.</p>
@@ -664,11 +678,98 @@ function kbApply(field){
  target.focus();
 }
 $('#kbApply').onclick=()=>kbApply('descricao');$('#kbResolution').onclick=()=>kbApply('resolucao');$('#kbCancel').onclick=()=>{$('#kbChosen').hidden=true;kbSelected=null};$('#kbSearch').oninput=kbRender;$('#ticketForm').elements.namedItem('problema').addEventListener('input',()=>{$('#kbSearch').value='';kbSelected=null;$('#kbChosen').hidden=true;kbRender()});$('#ticketForm').elements.namedItem('descricao').addEventListener('input',()=>{if(kbSelected)kbPreview()});$('#ticketForm').addEventListener('input',e=>{if(kbSelected&&e.target.name!=='descricao')kbPreview()});kbRender();
-function renderScripts(){const q=$('#scriptSearch').value.toLowerCase();$('#scriptArea').replaceChildren();for(const [title,text] of scripts.filter(([a,b])=>(a+b).toLowerCase().includes(q))){const d=document.createElement('div');d.className='script';const r=document.createElement('div');r.className='row between';const strong=document.createElement('strong');strong.textContent=title;const b=document.createElement('button');b.textContent='Copiar texto';b.onclick=async()=>{try{await navigator.clipboard.writeText(text);b.textContent='Copiado'}catch{const ta=document.createElement('textarea');ta.value=text;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove();b.textContent='Copiado'}};r.append(strong,b);const pre=document.createElement('pre');pre.textContent=text;d.append(r,pre);$('#scriptArea').append(d)}}$('#scriptSearch').oninput=renderScripts;
+let customKnowledgeTitles=new Set(),editingKnowledgeTitle=null;
+function closeKnowledgeEditor(){editingKnowledgeTitle=null;$('#knowledgeForm').reset();$('#knowledgeEditor').hidden=true}
+function openKnowledgeEditor(title=null){
+ if(title&&!customKnowledgeTitles.has(title))return;
+ editingKnowledgeTitle=title;
+ $('#knowledgeForm').reset();$('#knowledgeEditorTitle').textContent=title?'Editar conhecimento':'Novo conhecimento';
+ $('#knowledgeEditor').hidden=false;
+ if(title){
+  $('#knowledgeTitle').value=title;
+  $('#knowledgeSummary').value=KB_SUMMARIES[title]||title;
+  $('#knowledgeDescription').value=scripts.find(x=>x[0]===title)?.[1]||'';
+  $('#knowledgeResolution').value=KB_RESOLUTIONS[title]||'';
+  $('#knowledgeTags').value=(KB_TAGS.find(x=>x[0]===title)?.[1]||[]).join(', ');
+ }
+ $('#knowledgeTitle').focus();
+}
+$('#newKnowledge').onclick=()=>openKnowledgeEditor();
+$('#cancelKnowledge').onclick=closeKnowledgeEditor;
+$('#discardKnowledge').onclick=closeKnowledgeEditor;
+function persistKnowledge(){
+ localStorage.setItem(TRANSFER_KB_KEY,JSON.stringify(knowledgeSnapshot()));
+}
+$('#knowledgeForm').onsubmit=e=>{
+ e.preventDefault();
+ const title=$('#knowledgeTitle').value.trim(),summary=$('#knowledgeSummary').value.trim(),description=$('#knowledgeDescription').value.trim(),resolution=$('#knowledgeResolution').value.trim();
+ const tags=[...new Set($('#knowledgeTags').value.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean))].slice(0,30);
+ if(!title||!summary||!description){alert('Preencha título, resumo e descrição.');return}
+ if(scripts.some(x=>x[0].toLocaleLowerCase('pt-BR')===title.toLocaleLowerCase('pt-BR')&&x[0]!==editingKnowledgeTitle)){alert('Já existe um conhecimento com esse título.');return}
+ const previous=knowledgeSnapshot();
+ try{
+  if(editingKnowledgeTitle){
+   const idx=scripts.findIndex(x=>x[0]===editingKnowledgeTitle);
+   if(idx<0)throw Error('Conhecimento não encontrado');
+   scripts.splice(idx,1);
+   for(let i=KB_TAGS.length-1;i>=0;i--)if(KB_TAGS[i][0]===editingKnowledgeTitle)KB_TAGS.splice(i,1);
+   delete KB_SUMMARIES[editingKnowledgeTitle];delete KB_RESOLUTIONS[editingKnowledgeTitle];
+   customKnowledgeTitles.delete(editingKnowledgeTitle);
+  }
+  scripts.unshift([title,description]);KB_TAGS.push([title,tags]);
+  KB_SUMMARIES[title]=summary;if(resolution)KB_RESOLUTIONS[title]=resolution;
+  customKnowledgeTitles.add(title);
+  persistKnowledge();
+  closeKnowledgeEditor();renderScripts();kbRender();
+ }catch{
+  restoreKnowledgeInMemory(previous);
+  alert('Não foi possível salvar. Confira o espaço disponível no navegador.');
+ }
+};
+function restoreKnowledgeInMemory(snapshot){
+ scripts.splice(0,scripts.length,...snapshot.scripts);
+ KB_TAGS.splice(0,KB_TAGS.length,...snapshot.tags);
+ for(const key of Object.keys(KB_SUMMARIES))delete KB_SUMMARIES[key];
+ for(const key of Object.keys(KB_RESOLUTIONS))delete KB_RESOLUTIONS[key];
+ Object.assign(KB_SUMMARIES,snapshot.summaries);Object.assign(KB_RESOLUTIONS,snapshot.resolutions);
+ customKnowledgeTitles=new Set(snapshot.customTitles||[]);
+}
+function deleteKnowledge(title){
+ if(!customKnowledgeTitles.has(title)||!confirm('Excluir o conhecimento "'+title+'"? Esta ação não altera chamados existentes.'))return;
+ const previous=knowledgeSnapshot();
+ try{
+  const idx=scripts.findIndex(x=>x[0]===title);if(idx>=0)scripts.splice(idx,1);
+  for(let i=KB_TAGS.length-1;i>=0;i--)if(KB_TAGS[i][0]===title)KB_TAGS.splice(i,1);
+  delete KB_SUMMARIES[title];delete KB_RESOLUTIONS[title];
+  customKnowledgeTitles.delete(title);persistKnowledge();renderScripts();kbRender();
+ }catch{restoreKnowledgeInMemory(previous);alert('Não foi possível excluir este conhecimento.')}
+}
+function renderScripts(){
+ const q=$('#scriptSearch').value.toLocaleLowerCase('pt-BR');
+ $('#scriptArea').replaceChildren();
+ for(const [title,body] of scripts.filter(([name,content])=>[name,content,KB_SUMMARIES[name],(KB_TAGS.find(x=>x[0]===name)?.[1]||[]).join(' ')].join(' ').toLocaleLowerCase('pt-BR').includes(q))){
+  const d=document.createElement('div');d.className='script';
+  const r=document.createElement('div');r.className='row between';
+  const strong=document.createElement('strong');strong.textContent=title;
+  if(customKnowledgeTitles.has(title)){const own=document.createElement('small');own.className='knowledge-own-label';own.textContent='Criado por você';strong.append(' ',own)}
+  const actions=document.createElement('div');actions.className='row';
+  const copy=document.createElement('button');copy.type='button';copy.textContent='Copiar texto';
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(body);copy.textContent='Copiado'}catch{const ta=document.createElement('textarea');ta.value=body;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove();copy.textContent='Copiado'}};
+  actions.append(copy);
+  if(customKnowledgeTitles.has(title)){
+   const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.onclick=()=>openKnowledgeEditor(title);actions.append(edit);
+   const remove=document.createElement('button');remove.type='button';remove.className='danger';remove.textContent='Excluir';remove.onclick=()=>deleteKnowledge(title);actions.append(remove);
+  }
+  r.append(strong,actions);
+  if(KB_SUMMARIES[title]){const summary=document.createElement('p');summary.className='knowledge-summary';summary.textContent='Resumo: '+KB_SUMMARIES[title];d.append(r,summary)}else d.append(r);
+  const pre=document.createElement('pre');pre.textContent=body;d.append(pre);$('#scriptArea').append(d);
+ }
+}
+$('#scriptSearch').oninput=renderScripts;
 function download(name,content){const blob=new Blob([content],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 const TRANSFER_KB_KEY='tjes_kb_custom_snapshot_v1';
 let pendingImport=null;
-function knowledgeSnapshot(){return {scripts:scripts.map(x=>[...x]),tags:KB_TAGS.map(x=>[x[0],Array.isArray(x[1])?[...x[1]]:[]]),resolutions:{...KB_RESOLUTIONS},summaries:{...KB_SUMMARIES},recent:kbRecents()}}
+function knowledgeSnapshot(){return {scripts:scripts.map(x=>[...x]),tags:KB_TAGS.map(x=>[x[0],Array.isArray(x[1])?[...x[1]]:[]]),resolutions:{...KB_RESOLUTIONS},summaries:{...KB_SUMMARIES},customTitles:[...customKnowledgeTitles],recent:kbRecents()}}
 function applyKnowledge(snapshot){
  if(!snapshot||!Array.isArray(snapshot.scripts)||!Array.isArray(snapshot.tags)||!snapshot.resolutions||!snapshot.summaries)throw Error('Base inválida');
  if(snapshot.scripts.length>3000||snapshot.tags.length>3000||snapshot.scripts.some(x=>!Array.isArray(x)||x.length!==2||x.some(v=>typeof v!=='string'||v.length>20000)))throw Error('Base inválida');
@@ -681,8 +782,9 @@ function applyKnowledge(snapshot){
   for(const k of Object.keys(KB_SUMMARIES))delete KB_SUMMARIES[k];
   Object.assign(KB_RESOLUTIONS,snapshot.resolutions);
   Object.assign(KB_SUMMARIES,snapshot.summaries);
+  customKnowledgeTitles=new Set(Array.isArray(snapshot.customTitles)?snapshot.customTitles.filter(t=>typeof t==='string'&&snapshot.scripts.some(x=>x[0]===t)):[]);
   if(Array.isArray(snapshot.recent))localStorage.setItem(KB_RECENTS_KEY,JSON.stringify(snapshot.recent.filter(v=>typeof v==='string').slice(0,8)));
- }catch(e){scripts.splice(0,scripts.length,...old.scripts);KB_TAGS.splice(0,KB_TAGS.length,...old.tags);Object.assign(KB_RESOLUTIONS,old.resolutions);Object.assign(KB_SUMMARIES,old.summaries);throw e}
+ }catch(e){restoreKnowledgeInMemory(old);throw e}
 }
 function loadKnowledgeSnapshot(){
  try{const saved=localStorage.getItem(TRANSFER_KB_KEY);if(saved)applyKnowledge(JSON.parse(saved))}catch{localStorage.removeItem(TRANSFER_KB_KEY)}
