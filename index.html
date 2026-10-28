@@ -36,8 +36,59 @@
 .form-edit-toggle{display:inline-flex;align-items:center;gap:7px;border:1px solid #9cbdd7;background:#eff7fd;color:#245f89;font-weight:650}
 .form-edit-toggle[aria-pressed="true"]{background:#17649e;color:#fff;border-color:#17649e}
 #resetFields[hidden],#layoutHint[hidden]{display:none!important}
+
+/* Tema escuro opcional: preferência local, sem alterar os dados. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:650;white-space:nowrap;border-radius:7px;border-color:#a4bbcf}
+html[data-theme="dark"]{color-scheme:dark;background:#0e1723;color:#e3edf7}
+html[data-theme="dark"] body{background:#0e1723;color:#e3edf7}
+html[data-theme="dark"] .shell,html[data-theme="dark"] .main{background:#0e1723}
+html[data-theme="dark"] .side{background:#142232;border-color:#2b4258}
+html[data-theme="dark"] .top{background:#172738;border-color:#34485a}
+html[data-theme="dark"] .panel,html[data-theme="dark"] .dashcard,html[data-theme="dark"] .login{background:#192a3b;color:#e3edf7;border-color:#345066}
+html[data-theme="dark"] .kb-side{background:#142434;color:#e3edf7;border-color:#38546b}
+html[data-theme="dark"] .kb-side h2,html[data-theme="dark"] .form-zone-head{background:#233e56;color:#dceefe}
+html[data-theme="dark"] .nav{background:transparent;color:#d7e6f5}
+html[data-theme="dark"] .nav:hover,html[data-theme="dark"] .nav.active{background:#264761;color:#fff}
+html[data-theme="dark"] .logo{color:#91c9ef}
+html[data-theme="dark"] .hint,html[data-theme="dark"] .kb-small,html[data-theme="dark"] .zone-note,html[data-theme="dark"] .dash-title-text,html[data-theme="dark"] .dashempty{color:#a9bfd3}
+html[data-theme="dark"] .field label,html[data-theme="dark"] .assyst-form .field label,html[data-theme="dark"] .assyst-form .field-tile label{color:#d0e0ee}
+html[data-theme="dark"] input,html[data-theme="dark"] textarea,html[data-theme="dark"] select,html[data-theme="dark"] button:not(.primary):not(.nav):not(.dash-remove):not(.form-edit-toggle){background:#22384e;color:#f0f6fc;border-color:#45637d}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#a0b4c7}
+html[data-theme="dark"] input:focus,html[data-theme="dark"] textarea:focus,html[data-theme="dark"] select:focus{border-color:#70b9ee;outline-color:#70b9ee}
+html[data-theme="dark"] button:not(.primary):hover{background:#30506b;color:#fff}
+html[data-theme="dark"] button.primary{background:#1d77b9;color:#fff;border-color:#439fe2}
+html[data-theme="dark"] button.primary:hover{background:#258ad2}
+html[data-theme="dark"] .status{background:#204733;color:#bcf5ce}
+html[data-theme="dark"] .dashcardtitle{background:#254059!important;color:#eff7ff!important;border-color:#3b586c}
+html[data-theme="dark"] .dash-title-text{color:#eff7ff}
+html[data-theme="dark"] .dashcolumns{background:#22374b;color:#c4d8e9;border-color:#405c73}
+html[data-theme="dark"] .dashitem{border-color:#2d4357;color:#e5eef7}
+html[data-theme="dark"] .dashitem:hover{background:#2a4c68}
+html[data-theme="dark"] .dashcard.ticket-drop-target,html[data-theme="dark"] .dashcard.ticket-drop-target .dashbody{background:#234b62}
+html[data-theme="dark"] .field-tile,html[data-theme="dark"] .assyst-main .field-tile,html[data-theme="dark"] .assyst-extra .field-tile{background:#1e3246;border-color:#3b566e;color:#e6eff7}
+html[data-theme="dark"] #view-form.layout-editing .field-tile{background:#234159;border-color:#5481a2}
+html[data-theme="dark"] #view-form.layout-editing .form-zone-head{background:#29516e;color:#fff}
+html[data-theme="dark"] #view-form.layout-editing .assyst-main,html[data-theme="dark"] #view-form.layout-editing .assyst-extra{border-color:#487693}
+html[data-theme="dark"] .assyst-main.zone-drop,html[data-theme="dark"] .assyst-extra.zone-drop,html[data-theme="dark"] .field-tile.field-target{background:#2b536b!important;border-color:#75c2fa!important}
+html[data-theme="dark"] .field-drag-handle{background:#31516d;color:#e3f4ff;border-color:#6585a0}
+html[data-theme="dark"] .assyst-more{background:#192b3e;border-color:#38536a}
+html[data-theme="dark"] .kb-option,html[data-theme="dark"] .script{background:#21364b;color:#e9f3fc;border-color:#3e5b73}
+html[data-theme="dark"] .kb-option:hover,html[data-theme="dark"] .kb-option:focus{background:#2d526e}
+html[data-theme="dark"] .kb-option small{color:#adc5d7}
+html[data-theme="dark"] .kb-preview,html[data-theme="dark"] .script pre{background:#122435;color:#e6f0fa;border-color:#3d5a71}
+html[data-theme="dark"] .kb-warn{color:#ffcc78}
+html[data-theme="dark"] .warn{background:#463b22;color:#f9e6bb;border-color:#b78d3e}
+html[data-theme="dark"] table th{background:#254059;color:#e3edf7}
+html[data-theme="dark"] table td,html[data-theme="dark"] table th{border-color:#35516a}
+html[data-theme="dark"] .form-edit-toggle{background:#28445c;color:#e3f4ff;border-color:#5984a4}
+html[data-theme="dark"] .form-edit-toggle[aria-pressed="true"]{background:#1c7db9;color:white}
+html[data-theme="dark"] .dash-remove{background:#48303a!important;color:#ffc0cb!important;border-color:#90515e!important}
+html[data-theme="dark"] .dash-remove:hover{background:#693846!important}
+html[data-theme="dark"] .overlay{background:#101f2d}
+html[data-theme="dark"] .theme-toggle{background:#31516b!important;color:#f2f8ff!important}
+html[data-theme="dark"] .theme-toggle:hover{background:#406786!important}
 </style></head><body>
-<div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Backup</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Protótipo sem senha — use somente dados fictícios até aprovação da TI</span></div><div class="row"><span class="status">● Offline</span></div></header><div class="content">
+<div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Backup</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Protótipo sem senha — use somente dados fictícios até aprovação da TI</span></div><div class="row"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Ativar tema escuro" aria-pressed="false">☾ Tema escuro</button><span class="status">● Offline</span></div></header><div class="content">
 <section id="view-dashboard"><div class="row between dashheading"><div><h2>Bem-vindo ao painel de contingência</h2><span class="hint">Atendimentos do dia • Registros locais, sem integração com o Assyst</span></div><div class="row"><input type="date" id="dashboardDate" aria-label="Data dos atendimentos" style="width:170px"><button class="primary" id="dashboardNew">+ Novo atendimento</button><button id="dailyCopy">Copiar relatório do dia</button></div></div><div class="row" style="margin:10px 0"><button type="button" id="addPanel">+ Criar painel</button><button type="button" id="resetPanels">Restaurar painéis padrão</button><span class="hint">Arraste pelo título para reorganizar; use × para remover um painel.</span></div><div class="dashgrid"><article class="dashcard" data-panel="All"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">ATENDIMENTOS REGISTRADOS <span id="dashAllCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashAll"></div></article><article class="dashcard" data-panel="Pending"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">PENDENTES <span id="dashPendingCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashPending"></div></article><article class="dashcard" data-panel="Resolved"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">RESOLVIDOS <span id="dashResolvedCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashResolved"></div></article><article class="dashcard" data-panel="Transferred"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">TRANSFERIDOS AO SISTEMA <span id="dashTransferredCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashTransferred"></div></article></div><div class="warn">Esta é uma visão dos atendimentos salvos neste navegador. Não representa filas, prioridades, atribuições nem tempos reais do Assyst. Protótipo: não insira dados pessoais reais.</div></section>
 <section id="view-form"><div class="panel assyst-form"><div class="row between"><h2 id="formTitle">Novo atendimento</h2><button type="button" id="editFields" class="form-edit-toggle" aria-pressed="false" aria-controls="ticketForm" title="Ativar personalização dos campos">✎ <span>Editar layout</span></button><button type="button" id="resetFields" hidden>↺ Redefinir layout</button><span class="hint" id="layoutHint" hidden>Arraste os campos pelo símbolo ⠿. A página rola ao aproximar o cursor das bordas.</span><span class="hint" id="stamp"></span></div><form id="ticketForm" autocomplete="off"><div class="form-zone-head"><span>Campos principais</span><small>Solte aqui para exibir no atendimento</small></div><div class="assyst-main" data-field-zone="main">
 <div class="user"><div class="field"><label for="f-nome">Usuário afetado</label><input id="f-nome" name="nome" maxlength="180"></div></div><div class="phone"><div class="field"><label for="f-telefone">Telefone</label><input id="f-telefone" name="telefone" maxlength="50"></div></div><div class="ramal"><div class="field"><label for="f-ramal">Ramal</label><input id="f-ramal" name="ramal" maxlength="30"></div></div>
@@ -58,6 +109,18 @@
 const KEY='tjes_offline_plain_v05'; // mantém os registros já salvos na v0.5
 const LEGACY_KEY='tjes_offline_enc_v1';
 const $=s=>document.querySelector(s);
+const THEME_KEY='tjes_theme_v1';
+function setTheme(choice){
+ const dark=choice==='dark';
+ document.documentElement.dataset.theme=dark?'dark':'light';
+ const toggle=$('#themeToggle');
+ if(toggle){toggle.textContent=dark?'☀ Tema claro':'☾ Tema escuro';toggle.setAttribute('aria-label',dark?'Ativar tema claro':'Ativar tema escuro');toggle.setAttribute('aria-pressed',String(dark))}
+ try{localStorage.setItem(THEME_KEY,dark?'dark':'light')}catch{}
+}
+let savedTheme='light';try{savedTheme=localStorage.getItem(THEME_KEY)||'light'}catch{}
+setTheme(savedTheme);
+$('#themeToggle').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+
 let data={tickets:[]},editing=null,locked=false;
 const enc=new TextEncoder(),dec=new TextDecoder();
 const un64=s=>Uint8Array.from(atob(s),x=>x.charCodeAt(0));
