@@ -26,10 +26,20 @@
 .dashgrid:empty::after{content:'Nenhum painel ativo. Clique em Criar painel para começar.';display:block;padding:25px;background:#fff;border:1px dashed #b9cad7;border-radius:8px;color:#607587}
 @media(max-width:850px){.assyst-extra{grid-template-columns:repeat(2,minmax(0,1fr))}.assyst-main .field-tile.wide-field{grid-column:span 2!important}}
 @media(max-width:520px){.assyst-main .field-tile,.assyst-extra .field-tile,.assyst-main .field-tile.wide-field,.assyst-extra .field-tile.wide-field,.assyst-main .field-tile.long-field,.assyst-extra .field-tile.long-field{grid-column:1/-1!important}.assyst-main,.assyst-extra{display:grid!important;grid-template-columns:minmax(0,1fr)!important}.form-zone-head{align-items:flex-start;flex-direction:column}}
+
+/* Personalização habilitada somente quando o usuário escolher Editar layout */
+#view-form:not(.layout-editing) .field-drag-handle{display:none}
+#view-form.layout-editing .field-tile{border-color:#89b4d4;background:#fafdff}
+#view-form.layout-editing .form-zone-head{background:#dceefa}
+#view-form.layout-editing .assyst-main,#view-form.layout-editing .assyst-extra{border-color:#b9d5e7}
+#view-form.layout-editing .assyst-main.zone-drop,#view-form.layout-editing .assyst-extra.zone-drop{border-color:#167bb6;background:#e7f5ff}
+.form-edit-toggle{display:inline-flex;align-items:center;gap:7px;border:1px solid #9cbdd7;background:#eff7fd;color:#245f89;font-weight:650}
+.form-edit-toggle[aria-pressed="true"]{background:#17649e;color:#fff;border-color:#17649e}
+#resetFields[hidden],#layoutHint[hidden]{display:none!important}
 </style></head><body>
 <div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Backup</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Protótipo sem senha — use somente dados fictícios até aprovação da TI</span></div><div class="row"><span class="status">● Offline</span></div></header><div class="content">
 <section id="view-dashboard"><div class="row between dashheading"><div><h2>Bem-vindo ao painel de contingência</h2><span class="hint">Atendimentos do dia • Registros locais, sem integração com o Assyst</span></div><div class="row"><input type="date" id="dashboardDate" aria-label="Data dos atendimentos" style="width:170px"><button class="primary" id="dashboardNew">+ Novo atendimento</button><button id="dailyCopy">Copiar relatório do dia</button></div></div><div class="row" style="margin:10px 0"><button type="button" id="addPanel">+ Criar painel</button><button type="button" id="resetPanels">Restaurar painéis padrão</button><span class="hint">Arraste pelo título para reorganizar; use × para remover um painel.</span></div><div class="dashgrid"><article class="dashcard" data-panel="All"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">ATENDIMENTOS REGISTRADOS <span id="dashAllCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashAll"></div></article><article class="dashcard" data-panel="Pending"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">PENDENTES <span id="dashPendingCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashPending"></div></article><article class="dashcard" data-panel="Resolved"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">RESOLVIDOS <span id="dashResolvedCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashResolved"></div></article><article class="dashcard" data-panel="Transferred"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">TRANSFERIDOS AO SISTEMA <span id="dashTransferredCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashTransferred"></div></article></div><div class="warn">Esta é uma visão dos atendimentos salvos neste navegador. Não representa filas, prioridades, atribuições nem tempos reais do Assyst. Protótipo: não insira dados pessoais reais.</div></section>
-<section id="view-form"><div class="panel assyst-form"><div class="row between"><h2 id="formTitle">Novo atendimento</h2><span class="hint">Personalize o formulário: arraste pelo ícone ⠿ entre as áreas</span><button type="button" id="resetFields">Restaurar ordem dos campos</button><span class="hint" id="stamp"></span></div><form id="ticketForm" autocomplete="off"><div class="form-zone-head"><span>Campos principais</span><small>Solte aqui para exibir no atendimento</small></div><div class="assyst-main" data-field-zone="main">
+<section id="view-form"><div class="panel assyst-form"><div class="row between"><h2 id="formTitle">Novo atendimento</h2><button type="button" id="editFields" class="form-edit-toggle" aria-pressed="false" aria-controls="ticketForm" title="Ativar personalização dos campos">✎ <span>Editar layout</span></button><button type="button" id="resetFields" hidden>↺ Redefinir layout</button><span class="hint" id="layoutHint" hidden>Arraste os campos pelo símbolo ⠿. A página rola ao aproximar o cursor das bordas.</span><span class="hint" id="stamp"></span></div><form id="ticketForm" autocomplete="off"><div class="form-zone-head"><span>Campos principais</span><small>Solte aqui para exibir no atendimento</small></div><div class="assyst-main" data-field-zone="main">
 <div class="user"><div class="field"><label for="f-nome">Usuário afetado</label><input id="f-nome" name="nome" maxlength="180"></div></div><div class="phone"><div class="field"><label for="f-telefone">Telefone</label><input id="f-telefone" name="telefone" maxlength="50"></div></div><div class="ramal"><div class="field"><label for="f-ramal">Ramal</label><input id="f-ramal" name="ramal" maxlength="30"></div></div>
 <div class="email"><div class="field"><label for="f-email">E-mail</label><input id="f-email" name="email" type="email" maxlength="220"></div></div>
 <div class="section"><div class="field"><label for="f-secao">Seção</label><input id="f-secao" name="secao" maxlength="160"></div></div><div class="dept"><div class="field"><label for="f-departamento">Departamento</label><input id="f-departamento" name="departamento" maxlength="160"></div></div><div class="building"><div class="field"><label for="f-edificio">Edifício</label><input id="f-edificio" name="edificio" maxlength="160" placeholder="Por definir"></div></div><div class="room"><div class="field"><label for="f-sala">Sala</label><input id="f-sala" name="sala" maxlength="80"></div></div>
@@ -140,6 +150,37 @@ const formMain=document.querySelector('[data-field-zone="main"]'),formExtra=docu
 const fieldZones=[formMain,formExtra],allFieldTiles=[...formMain.children,...formExtra.children];
 const defaultFieldLayout={main:[...formMain.children].map(x=>x.querySelector('[name]')?.name),extra:[...formExtra.children].map(x=>x.querySelector('[name]')?.name)};
 let activeFieldTile=null;
+let layoutEditing=false,dragPointerY=null,fieldAutoScrollTimer=null;
+function updateLayoutMode(on){
+ layoutEditing=on;
+ document.querySelector('#view-form').classList.toggle('layout-editing',on);
+ $('#editFields').setAttribute('aria-pressed',String(on));
+ $('#editFields').querySelector('span').textContent=on?'Concluir edição':'Editar layout';
+ $('#editFields').title=on?'Concluir personalização':'Ativar personalização dos campos';
+ $('#resetFields').hidden=!on;$('#layoutHint').hidden=!on;
+ if(!on){activeFieldTile=null;stopFieldAutoScroll();clearFieldIndicators()}
+}
+function stopFieldAutoScroll(){dragPointerY=null;if(fieldAutoScrollTimer!==null){clearInterval(fieldAutoScrollTimer);fieldAutoScrollTimer=null}}
+function startFieldAutoScroll(){
+ if(fieldAutoScrollTimer!==null)return;
+ fieldAutoScrollTimer=setInterval(()=>{
+  if(!layoutEditing||!activeFieldTile||dragPointerY===null){stopFieldAutoScroll();return}
+  const edge=Math.min(110,Math.max(55,innerHeight*0.14));
+  let speed=0;
+  if(dragPointerY<edge)speed=-Math.ceil(5+22*(1-Math.max(0,dragPointerY)/edge));
+  else if(dragPointerY>innerHeight-edge)speed=Math.ceil(5+22*(1-Math.max(0,innerHeight-dragPointerY)/edge));
+  if(speed)window.scrollBy(0,speed);
+ },25);
+}
+window.addEventListener('dragover',e=>{
+ if(!layoutEditing||!activeFieldTile)return;
+ e.preventDefault();dragPointerY=e.clientY;startFieldAutoScroll();
+});
+window.addEventListener('drop',()=>{stopFieldAutoScroll()});
+window.addEventListener('dragend',()=>{stopFieldAutoScroll();activeFieldTile=null;clearFieldIndicators()});
+window.addEventListener('blur',()=>{stopFieldAutoScroll()});
+$('#editFields').onclick=()=>updateLayoutMode(!layoutEditing);
+updateLayoutMode(false);
 function getFieldName(tile){return tile.querySelector('[name]')?.name}
 function saveFieldLayout(){try{localStorage.setItem(FIELD_ORDER_KEY,JSON.stringify({version:2,main:[...formMain.children].map(getFieldName),extra:[...formExtra.children].map(getFieldName)}))}catch{}}
 function clearFieldIndicators(){for(const zone of fieldZones)zone.classList.remove('zone-drop');for(const tile of allFieldTiles)tile.classList.remove('field-dragging','field-target')}
@@ -171,18 +212,18 @@ function decorateField(tile){
  const top=document.createElement('div');top.className='field-top';
  const grip=document.createElement('span');grip.className='field-drag-handle';grip.textContent='⠿';grip.draggable=true;grip.tabIndex=0;grip.setAttribute('role','button');grip.setAttribute('aria-label','Mover campo '+label.textContent);
  label.before(top);top.append(grip,label);
- grip.addEventListener('dragstart',e=>{activeFieldTile=tile;e.stopPropagation();e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','field:'+name);tile.classList.add('field-dragging');formExtra.closest('details').open=true});
- grip.addEventListener('dragend',()=>{activeFieldTile=null;clearFieldIndicators()});
- grip.addEventListener('keydown',e=>{if(!e.altKey||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const dest=e.key==='ArrowUp'||e.key==='ArrowDown'?(tile.parentElement===formMain?formExtra:formMain):tile.parentElement;const items=[...dest.children];if(dest===tile.parentElement){const pos=items.indexOf(tile)+(e.key==='ArrowLeft'?-1:1);if(items[pos]){if(pos<items.indexOf(tile))items[pos].before(tile);else items[pos].after(tile)}}else dest.append(tile);saveFieldLayout();grip.focus()});
- tile.addEventListener('dragover',e=>{if(!activeFieldTile||activeFieldTile===tile)return;e.preventDefault();e.stopPropagation();tile.classList.add('field-target');tile.parentElement.classList.add('zone-drop')});
+ grip.addEventListener('dragstart',e=>{if(!layoutEditing){e.preventDefault();return}activeFieldTile=tile;e.stopPropagation();e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','field:'+name);tile.classList.add('field-dragging');formExtra.closest('details').open=true});
+ grip.addEventListener('dragend',()=>{activeFieldTile=null;stopFieldAutoScroll();clearFieldIndicators()});
+ grip.addEventListener('keydown',e=>{if(!layoutEditing||!e.altKey||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const dest=e.key==='ArrowUp'||e.key==='ArrowDown'?(tile.parentElement===formMain?formExtra:formMain):tile.parentElement;const items=[...dest.children];if(dest===tile.parentElement){const pos=items.indexOf(tile)+(e.key==='ArrowLeft'?-1:1);if(items[pos]){if(pos<items.indexOf(tile))items[pos].before(tile);else items[pos].after(tile)}}else dest.append(tile);saveFieldLayout();grip.focus()});
+ tile.addEventListener('dragover',e=>{if(!layoutEditing||!activeFieldTile||activeFieldTile===tile)return;e.preventDefault();e.stopPropagation();tile.classList.add('field-target');tile.parentElement.classList.add('zone-drop')});
  tile.addEventListener('dragleave',()=>tile.classList.remove('field-target'));
- tile.addEventListener('drop',e=>{if(!activeFieldTile||activeFieldTile===tile)return;e.preventDefault();e.stopPropagation();const from=activeFieldTile;const pos=[...tile.parentElement.children].indexOf(tile);if(from.parentElement===tile.parentElement&&[...tile.parentElement.children].indexOf(from)<pos)tile.after(from);else tile.before(from);activeFieldTile=null;saveFieldLayout();clearFieldIndicators()})
+ tile.addEventListener('drop',e=>{if(!layoutEditing||!activeFieldTile||activeFieldTile===tile)return;e.preventDefault();e.stopPropagation();const from=activeFieldTile;const pos=[...tile.parentElement.children].indexOf(tile);if(from.parentElement===tile.parentElement&&[...tile.parentElement.children].indexOf(from)<pos)tile.after(from);else tile.before(from);activeFieldTile=null;saveFieldLayout();clearFieldIndicators()})
 }
 for(const tile of allFieldTiles)decorateField(tile);
 for(const zone of fieldZones){
- zone.addEventListener('dragover',e=>{if(!activeFieldTile)return;e.preventDefault();zone.classList.add('zone-drop')});
+ zone.addEventListener('dragover',e=>{if(!layoutEditing||!activeFieldTile)return;e.preventDefault();zone.classList.add('zone-drop')});
  zone.addEventListener('dragleave',e=>{if(!zone.contains(e.relatedTarget))zone.classList.remove('zone-drop')});
- zone.addEventListener('drop',e=>{if(!activeFieldTile)return;e.preventDefault();if(e.target.closest('.field-tile')&&e.target.closest('.field-tile')!==activeFieldTile)return;zone.append(activeFieldTile);activeFieldTile=null;saveFieldLayout();clearFieldIndicators()});
+ zone.addEventListener('drop',e=>{if(!layoutEditing||!activeFieldTile)return;e.preventDefault();if(e.target.closest('.field-tile')&&e.target.closest('.field-tile')!==activeFieldTile)return;zone.append(activeFieldTile);activeFieldTile=null;saveFieldLayout();clearFieldIndicators()});
 }
 restoreFieldLayout();
 $('#resetFields').onclick=()=>{const byName=new Map(allFieldTiles.map(tile=>[getFieldName(tile),tile]));for(const name of defaultFieldLayout.main)formMain.append(byName.get(name));for(const name of defaultFieldLayout.extra)formExtra.append(byName.get(name));localStorage.removeItem(FIELD_ORDER_KEY);clearFieldIndicators()};
