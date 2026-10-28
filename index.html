@@ -96,7 +96,7 @@ html[data-theme="dark"] .theme-toggle:hover{background:#406786!important}
 .layout-tools .form-edit-toggle:hover,.layout-tools .form-edit-toggle:focus-visible,.layout-tools #resetFields:hover,.layout-tools #resetFields:focus-visible{opacity:1}
 .layout-tools #resetFields[hidden]{display:none!important}
 .assyst-form:has(.layout-editing)>.row.between:first-of-type{padding-right:75px}
-.txt-export-actions{margin-top:13px;padding:10px 0;gap:8px;align-items:center;flex-wrap:wrap}.txt-export-actions button{font-size:12px}.txt-ticket-check,#txtToggleVisible{width:17px;height:17px;accent-color:#2675b3;cursor:pointer}.tablewrap td:first-child,.tablewrap th:first-child{width:34px;text-align:center}html[data-theme="dark"] .txt-export-actions{border-color:#35516a}</style></head><body>
+.txt-export-actions{margin-top:13px;padding:10px 0;gap:8px;align-items:center;flex-wrap:wrap}.txt-export-actions button{font-size:12px}.txt-ticket-check,#txtToggleVisible{width:17px;height:17px;accent-color:#2675b3;cursor:pointer}.tablewrap td:first-child,.tablewrap th:first-child{width:34px;text-align:center}html[data-theme="dark"] .txt-export-actions{border-color:#35516a}.txt-preview-dialog{width:min(920px,94vw);max-height:90vh;border:1px solid #a7bacb;border-radius:12px;padding:20px;background:#fff;color:#26374a;box-shadow:0 16px 48px #0005}.txt-preview-dialog::backdrop{background:#081320b8}.txt-preview-dialog textarea{width:100%;height:min(65vh,610px);font:18px/1.65 Consolas,'Courier New',monospace;white-space:pre;overflow:auto;resize:vertical;margin:10px 0}html[data-theme="dark"] .txt-preview-dialog{background:#192a3b;color:#e3edf7;border-color:#48677e}html[data-theme="dark"] .txt-preview-dialog textarea{background:#20394d;color:#edf7ff;border-color:#547087}</style></head><body>
 <div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Backup</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Protótipo sem senha — use somente dados fictícios até aprovação da TI</span></div><div class="row"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Ativar tema escuro" aria-pressed="false">☾ Tema escuro</button><span class="status">● Offline</span></div></header><div class="content">
 <section id="view-dashboard"><div class="row between dashheading"><div><h2>Bem-vindo ao painel de contingência</h2><span class="hint">Atendimentos do dia • Registros locais, sem integração com o Assyst</span></div><div class="row"><input type="date" id="dashboardDate" aria-label="Data dos atendimentos" style="width:170px"><button class="primary" id="dashboardNew">+ Novo atendimento</button><button id="dailyCopy">Copiar relatório do dia</button></div></div><div class="row" style="margin:10px 0"><button type="button" id="addPanel">+ Criar painel</button><button type="button" id="resetPanels">Restaurar painéis padrão</button><span class="hint">Arraste pelo título para reorganizar; use × para remover um painel.</span></div><div class="dashgrid"><article class="dashcard" data-panel="All"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">ATENDIMENTOS REGISTRADOS <span id="dashAllCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashAll"></div></article><article class="dashcard" data-panel="Pending"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">PENDENTES <span id="dashPendingCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashPending"></div></article><article class="dashcard" data-panel="Resolved"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">RESOLVIDOS <span id="dashResolvedCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashResolved"></div></article><article class="dashcard" data-panel="Transferred"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">TRANSFERIDOS AO SISTEMA <span id="dashTransferredCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashTransferred"></div></article></div><div class="warn">Esta é uma visão dos atendimentos salvos neste navegador. Não representa filas, prioridades, atribuições nem tempos reais do Assyst. Protótipo: não insira dados pessoais reais.</div></section>
 <section id="view-form"><div class="panel assyst-form"><div class="layout-tools"><button type="button" id="resetFields" hidden title="Redefinir a ordem dos campos" aria-label="Redefinir a ordem dos campos">↺</button><button type="button" id="editFields" class="form-edit-toggle" aria-pressed="false" aria-controls="ticketForm" aria-label="Editar layout dos campos" title="Editar layout dos campos">✎</button></div><div class="row between"><h2 id="formTitle">Novo atendimento</h2><span class="hint" id="layoutHint" hidden>Arraste os campos pelo símbolo ⠿. A página rola ao aproximar o cursor das bordas.</span><span class="hint" id="stamp"></span></div><form id="ticketForm" autocomplete="off"><div class="assyst-main" data-field-zone="main">
@@ -108,7 +108,13 @@ html[data-theme="dark"] .theme-toggle:hover{background:#406786!important}
 <div class="field"><label for="f-chamado">Chamado / Protocolo</label><input id="f-chamado" name="chamado" maxlength="80"></div><div class="field"><label for="f-cpf">CPF</label><input id="f-cpf" name="cpf" maxlength="20"></div><div class="field"><label for="f-ocupacao">Ocupação</label><input id="f-ocupacao" name="ocupacao" maxlength="160"></div><div class="field"><label for="f-endereco">Endereço</label><input id="f-endereco" name="endereco" maxlength="220"></div><div class="field"><label for="f-chefia">Chefia</label><input id="f-chefia" name="chefia" maxlength="180"></div>
 <div class="field"><label>Status</label><select name="status"><option>Registrado</option><option>Pendente</option><option>Resolvido</option><option>Transferido ao sistema oficial</option></select></div><div class="field full"><label>Resolução / Tratativa</label><textarea name="resolucao" rows="5"></textarea></div>
 </div></details><div class="row" style="margin-top:16px"><button type="submit" class="primary" id="saveBtn">Salvar atendimento</button><button type="button" id="clearBtn">Limpar formulário</button><span class="hint" id="saveInfo"></span></div></form></div></section>
-<section id="view-list" class="hide"><div class="panel"><div class="row between"><h2>Atendimentos registrados</h2><span class="hint" id="count"></span></div><div class="row"><input style="max-width:360px" id="search" placeholder="Pesquisar nome, protocolo ou problema"><input id="dateFilter" type="date" style="max-width:180px"><button id="showAll">Todas as datas</button><button type="button" id="insertExamples" title="Adicionar atendimentos fictícios para testar as funcionalidades">＋ Inserir 6 exemplos</button></div><div class="row txt-export-actions"><button type="button" class="primary" id="txtExportAll">↓ TXT de todos</button><button type="button" id="txtExportSelected">↓ TXT selecionados</button><button type="button" id="txtSelectVisible">Selecionar resultados</button><button type="button" id="txtClearSelection">Limpar seleção</button><span id="txtSelectedCount" class="hint" aria-live="polite">0 selecionados</span></div><div class="tablewrap" style="margin-top:15px"><table><thead><tr><th><input type="checkbox" id="txtToggleVisible" aria-label="Selecionar todos os atendimentos exibidos" title="Selecionar todos os atendimentos exibidos"></th><th>Data/hora</th><th>Chamado</th><th>Nome</th><th>Problema</th><th>Status</th><th>Ações</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
+<section id="view-list" class="hide"><div class="panel"><div class="row between"><h2>Atendimentos registrados</h2><span class="hint" id="count"></span></div><div class="row"><input style="max-width:360px" id="search" placeholder="Pesquisar nome, protocolo ou problema"><input id="dateFilter" type="date" style="max-width:180px"><button id="showAll">Todas as datas</button><button type="button" id="insertExamples" title="Adicionar atendimentos fictícios para testar as funcionalidades">＋ Inserir 6 exemplos</button></div><div class="row txt-export-actions"><button type="button" class="primary" id="txtExportAll">↓ TXT de todos</button><button type="button" id="txtExportSelected">↓ TXT selecionados</button><button type="button" id="txtPreview">Visualizar texto ampliado</button><button type="button" id="txtSelectVisible">Selecionar resultados</button><button type="button" id="txtClearSelection">Limpar seleção</button><span id="txtSelectedCount" class="hint" aria-live="polite">0 selecionados</span></div><div class="tablewrap" style="margin-top:15px"><table><thead><tr><th><input type="checkbox" id="txtToggleVisible" aria-label="Selecionar todos os atendimentos exibidos" title="Selecionar todos os atendimentos exibidos"></th><th>Data/hora</th><th>Chamado</th><th>Nome</th><th>Problema</th><th>Status</th><th>Ações</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
+<dialog id="txtPreviewDialog" class="txt-preview-dialog" aria-label="Prévia de atendimentos em texto">
+ <div class="row between"><strong>Prévia para copiar e colar</strong><button type="button" id="txtClosePreview" aria-label="Fechar prévia">✕</button></div>
+ <p class="hint">Fonte ampliada apenas nesta visualização. O arquivo TXT usa a fonte configurada no programa que o abrir.</p>
+ <textarea id="txtPreviewContent" readonly spellcheck="false" aria-label="Conteúdo TXT ampliado"></textarea>
+ <div class="row"><button type="button" class="primary" id="txtCopyPreview">Copiar todo o texto</button></div>
+ </dialog>
 <section id="view-scripts" class="hide"><div class="panel"><h2>Base de Conhecimento</h2><p class="hint">Os modelos são exemplos da documentação enviada. Valide conteúdo, contatos e bases com a operação antes do uso oficial.</p><div class="row"><input id="scriptSearch" placeholder="Filtrar por texto ou base de conhecimento"></div><div id="scriptArea"></div></div></section>
 <section id="view-backup" class="hide"><div class="panel"><h2>Cópia de segurança</h2><p>Os registros ficam neste navegador, sem senha e sem criptografia. Limpar os dados do navegador pode apagá-los. Faça cópias de segurança somente com dados fictícios durante os testes.</p><div class="row"><button class="primary" id="exportBtn">Baixar backup (sem criptografia)</button><button id="importBtn">Restaurar backup</button><input type="file" id="importFile" accept=".json,application/json" class="hide"></div><div class="warn">A restauração substitui os registros atuais. O backup desta versão é legível e não deve conter dados pessoais reais. Backups antigos criptografados exigem a senha anterior apenas para restauração.</div><p class="hint">Os modelos da base são mantidos no arquivo base-de-conhecimento.js e não contêm os nomes, CPFs e telefones de casos específicos do exemplo.</p></div></section>
 </div></main><aside class="kb-side" id="kbSide" aria-label="Base de conhecimento"><h2>▣ Base de conhecimento • Sugestões</h2><p class="kb-small">Se houver um resumo, mostra modelos compatíveis. Sem resumo, mostra seus modelos recentes ou sugestões iniciais. O histórico é salvo apenas neste navegador.</p><input id="kbSearch" placeholder="Pesquisar: senha, PJe, pendenciamento..." aria-label="Pesquisar na base de conhecimento"><p class="kb-small" id="kbResultsLabel" aria-live="polite">Modelos sugeridos para começar</p><div id="kbResults"></div><div id="kbChosen" hidden><strong id="kbSelectedTitle"></strong><div class="kb-preview" id="kbPreview"></div><p class="kb-warn" id="kbMissing"></p><div class="kb-actions"><button class="primary" type="button" id="kbApply">Aplicar na descrição</button><button type="button" id="kbResolution">Aplicar na resolução</button><button type="button" id="kbCancel">Cancelar</button></div><p class="kb-small">Ao selecionar um modelo, o resumo e a descrição são ajustados juntos. O resumo muda automaticamente; só é solicitada confirmação quando a descrição preenchida será substituída. Nada é salvo sem clicar em Salvar atendimento.</p></div></aside></div>
@@ -182,19 +188,33 @@ function updateTxtSelected(){
 }
 function txtVisibleIds(){return [...document.querySelectorAll('#rows tr')].map(row=>row.querySelector('.txt-ticket-check')?.dataset.id).filter(Boolean)}
 // Texto operacional pronto para seleção e colagem manual no sistema oficial.
-function ticketPasteText(t){
- const date=t.created?new Date(t.created).toLocaleString('pt-BR'):'';
- const meta=[['Chamado',t.chamado],['Data / hora',date],['Usuário afetado',t.nome],['Telefone',t.telefone],['Ramal',t.ramal],['E-mail',t.email],['Seção',t.secao],['Departamento',t.departamento],['Edifício',t.edificio],['Sala',t.sala],['CPF',t.cpf],['Ocupação',t.ocupacao],['Endereço',t.endereco],['Chefia',t.chefia],['Status',t.status]]
-   .filter(([,value])=>String(value??'').trim()).map(([label,value])=>label+': '+String(value).trim());
- const parts=[meta.join('\n'),'RESUMO\n'+String(t.problema||'').trim(),'DESCRIÇÃO\n'+String(t.descricao||'').trim(),'RESOLUÇÃO / TRATATIVA\n'+String(t.resolucao||'').trim()];
- return parts.join('\n\n').trim();
+// Formato de leitura e colagem: marcadores consistentes por campo.
+function ticketPasteText(t,index){
+ const values=[
+  ['Problema',t.problema],['Nome',t.nome],['CPF',t.cpf],['E-mail',t.email],
+  ['Telefone',t.telefone],['Ramal',t.ramal],['Ocupação',t.ocupacao],
+  ['Endereço',t.endereco],['Chefia',t.chefia],['Seção',t.secao],
+  ['Departamento',t.departamento],['Edifício',t.edificio],['Sala',t.sala],
+  ['Descrição',t.descricao],['Resolução',t.resolucao],['Status',t.status]
+ ];
+ const lines=['•  '+(index||1)+' - CHAMADO: '+String(t.chamado||'Sem protocolo')];
+ for(const [label,value] of values){
+  const raw=String(value??'').trim();
+  // Manter campo em uma linha quando possível, inclusive quando vazio.
+  const normalized=raw.replace(/\r\n?/g,'\n').replace(/\n/g,'\n     ');
+  lines.push('•  '+label+': '+normalized);
+ }
+ return lines.join('\n');
+}
+function ticketsTxtContent(items){
+ const dates=[...new Set(items.map(t=>localDay(new Date(t.created))))];
+ const heading=dates.length===1?'ATENDIMENTOS DO DIA: '+dates[0].split('-').reverse().join('/'):'ATENDIMENTOS REGISTRADOS';
+ const separator='-'.repeat(65);
+ return [heading,separator,'',...items.flatMap((t,i)=>[ticketPasteText(t,i+1),'',separator,''])].join('\n');
 }
 function exportTicketsTxt(items,name){
  if(!items.length){alert('Não há atendimentos para baixar.');return}
- // Uma seção por chamado, sem tabela nem formatação que dificulte copiar.
- const blocks=items.map((t,i)=>'CHAMADO '+(i+1)+' DE '+items.length+'\n'+ticketPasteText(t));
- const content=blocks.join('\n\n'+'='.repeat(55)+'\n\n');
- const blob=new Blob(['\uFEFF'+content.replace(/\n/g,'\r\n')],{type:'text/plain;charset=utf-8'});
+ const blob=new Blob(['\uFEFF'+ticketsTxtContent(items).replace(/\n/g,'\r\n')],{type:'text/plain;charset=utf-8'});
  const url=URL.createObjectURL(blob),link=document.createElement('a');
  link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
@@ -209,6 +229,19 @@ async function copyTicketForPaste(t){
  }
 }
 function txtFileName(kind){return 'TJES_atendimentos_'+kind+'_'+localDay(new Date())+'.txt'}
+$('#txtPreview').onclick=()=>{
+ const marked=data.tickets.filter(t=>selectedTxtTicketIds.has(t.id));
+ const items=(marked.length?marked:data.tickets).slice().sort((a,b)=>a.created.localeCompare(b.created));
+ if(!items.length){alert('Não há atendimentos para visualizar.');return}
+ $('#txtPreviewContent').value=ticketsTxtContent(items);
+ $('#txtPreviewDialog').showModal();
+};
+$('#txtClosePreview').onclick=()=>$('#txtPreviewDialog').close();
+$('#txtCopyPreview').onclick=async()=>{
+ const text=$('#txtPreviewContent').value;
+ try{await navigator.clipboard.writeText(text);$('#txtCopyPreview').textContent='Copiado!'}
+ catch{const box=$('#txtPreviewContent');box.focus();box.select();alert('Texto selecionado. Use Ctrl+C para copiar.')}
+};
 $('#txtExportAll').onclick=()=>exportTicketsTxt([...data.tickets].sort((a,b)=>a.created.localeCompare(b.created)),txtFileName('todos'));
 $('#txtExportSelected').onclick=()=>exportTicketsTxt(data.tickets.filter(t=>selectedTxtTicketIds.has(t.id)).sort((a,b)=>a.created.localeCompare(b.created)),txtFileName('selecionados'));
 $('#txtSelectVisible').onclick=()=>{document.querySelectorAll('#rows .txt-ticket-check').forEach(cb=>{cb.checked=true;selectedTxtTicketIds.add(cb.dataset.id)});updateTxtSelected()};
