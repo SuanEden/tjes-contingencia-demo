@@ -199,8 +199,18 @@ let data={tickets:[]},editing=null,locked=false;
 const CONTACTS_KEY='tjes_contatos_locais_v1';
 const CONTACT_FIELDS=['nome','telefone','ramal','email','secao','departamento','edificio','sala','ocupacao','chefia'];
 let savedContacts=[];
-const contactKey=s=>String(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\\s+/g,' ');
+const contactKey=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\s+/g,' ');
 function loadSavedContacts(){try{const raw=JSON.parse(localStorage.getItem(CONTACTS_KEY)||'[]');savedContacts=Array.isArray(raw)?raw.filter(v=>v&&typeof v.nome==='string').slice(0,3000):[]}catch{savedContacts=[]}refreshSavedPeople()}
+function importPeopleFromHistory(){
+ const original=savedContacts.slice();let changed=false;
+ const history=[...data.tickets].filter(t=>t&&t.nome).sort((a,b)=>String(b.updated||b.created||'').localeCompare(String(a.updated||a.created||'')));
+ for(const t of history){
+  const key=contactKey(t.nome),i=savedContacts.findIndex(c=>contactKey(c.nome)===key);
+  if(i<0){const p={nome:String(t.nome).trim()};for(const field of CONTACT_FIELDS){if(field!=='nome'&&t[field])p[field]=String(t[field]).trim()}savedContacts.push(p);changed=true}
+  else {const p=savedContacts[i];for(const field of CONTACT_FIELDS){if(field!=='nome'&&!p[field]&&t[field]){p[field]=String(t[field]).trim();changed=true}}}
+ }
+ if(changed){try{localStorage.setItem(CONTACTS_KEY,JSON.stringify(savedContacts));refreshSavedPeople()}catch{savedContacts=original;refreshSavedPeople()}}
+}
 function refreshSavedPeople(){const list=$('#savedPeopleList');if(!list)return;list.replaceChildren();for(const c of [...savedContacts].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'))){const opt=document.createElement('option');opt.value=c.nome;const context=[c.secao,c.ramal,c.telefone].filter(Boolean).join(' · ');opt.label=context;list.append(opt)}}
 function saveContactFromTicket(ticket){const name=String(ticket.nome||'').trim();if(!name)return;const idx=savedContacts.findIndex(c=>contactKey(c.nome)===contactKey(name));const existing=idx<0?{}:savedContacts[idx];const profile={...existing,nome:name};for(const field of CONTACT_FIELDS){if(field==='nome')continue;const value=String(ticket[field]||'').trim();if(value)profile[field]=value}profile.savedAt=new Date().toISOString();const next=[...savedContacts];if(idx>=0)next.splice(idx,1);next.unshift(profile);try{localStorage.setItem(CONTACTS_KEY,JSON.stringify(next));savedContacts=next;refreshSavedPeople();return true}catch{return false}}
 function fillSavedPerson(){const f=$('#ticketForm'),name=f.elements.namedItem('nome').value.trim();const match=savedContacts.find(c=>contactKey(c.nome)===contactKey(name));if(!match){$('#contactLookupHint').textContent='Pessoa não encontrada. Selecione um nome da lista.';return}let filled=0;for(const field of CONTACT_FIELDS){if(field==='nome')continue;const el=f.elements.namedItem(field);if(el&&match[field]&&!el.value.trim()){el.value=match[field];filled++}}$('#contactLookupHint').textContent=filled?'Dados recuperados: '+filled+' campo(s). Confira se estão atualizados.':'Pessoa encontrada. Nenhum campo vazio para preencher.'}
@@ -213,7 +223,7 @@ async function save(){localStorage.setItem(KEY,JSON.stringify({version:2,tickets
 function initialize(){
  try{const stored=localStorage.getItem(KEY);if(stored)data=validate(JSON.parse(stored));}
  catch(e){alert('Não foi possível carregar os registros locais. O armazenamento existente foi preservado.');locked=true;return}
- migratePanelAssignments();loadSavedContacts();$('#app').hidden=false;$('#dashboardDate').value=localDay(new Date());$('#dateFilter').value=localDay(new Date());show('form');render();
+ migratePanelAssignments();loadSavedContacts();importPeopleFromHistory();$('#app').hidden=false;$('#dashboardDate').value=localDay(new Date());$('#dateFilter').value=localDay(new Date());show('form');render();
  if(localStorage.getItem(LEGACY_KEY)){
   const p=document.createElement('div');p.className='warn';p.textContent='Há registros protegidos por senha de uma versão anterior neste navegador. Eles foram preservados e não são carregados automaticamente. Use a restauração do backup antigo, na aba Backup, se necessário.';
   $('#view-form').prepend(p);
