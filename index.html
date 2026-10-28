@@ -198,9 +198,11 @@ function ticketPasteText(t,index){
   ['Descrição',t.descricao],['Resolução',t.resolucao],['Status',t.status]
  ];
  const lines=['•  '+(index||1)+' - CHAMADO: '+String(t.chamado||'Sem protocolo')];
+ const importantFields=new Set(['Problema','Nome','Descrição','Resolução','Status']);
  for(const [label,value] of values){
   const raw=String(value??'').trim();
-  // Manter campo em uma linha quando possível, inclusive quando vazio.
+  // Campos complementares sem valor não poluem o TXT; campos principais permanecem identificados.
+  if(!raw&&!importantFields.has(label))continue;
   const normalized=raw.replace(/\r\n?/g,'\n').replace(/\n/g,'\n     ');
   lines.push('•  '+label+': '+normalized);
  }
