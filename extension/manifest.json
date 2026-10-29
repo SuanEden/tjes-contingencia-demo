@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "TJES Contingência",
+  "version": "1.0.0",
+  "description": "Sistema local de contingência para registros, cadastros e base de conhecimento. Demonstração independente do site.",
+  "action": {
+    "default_title": "Abrir TJES Contingência"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
