@@ -216,6 +216,7 @@ html[data-theme="dark"] #view-dashboard .dash-panel-tools:not([hidden]){backgrou
 </div></section>
 </div></main><aside class="kb-side" id="kbSide" aria-label="Base de conhecimento"><h2>▣ Base de conhecimento • Sugestões</h2><p class="kb-small">Se houver um resumo, mostra modelos compatíveis. Sem resumo, mostra seus modelos recentes ou sugestões iniciais. O histórico é salvo apenas neste navegador.</p><input id="kbSearch" placeholder="Pesquisar: senha, PJe, pendenciamento..." aria-label="Pesquisar na base de conhecimento"><p class="kb-small" id="kbResultsLabel" aria-live="polite">Modelos sugeridos para começar</p><div id="kbResults"></div><div id="kbChosen" hidden><strong id="kbSelectedTitle"></strong><div class="kb-preview" id="kbPreview"></div><p class="kb-warn" id="kbMissing"></p><div class="kb-actions"><button class="primary" type="button" id="kbApply">Aplicar na descrição</button><button type="button" id="kbResolution">Aplicar na resolução</button><button type="button" id="kbCancel">Cancelar</button></div><p class="kb-small">Ao selecionar um modelo, o resumo e a descrição são ajustados juntos. O resumo muda automaticamente; só é solicitada confirmação quando a descrição preenchida será substituída. Nada é salvo sem clicar em Salvar atendimento.</p></div></aside></div>
 <script src="./base-de-conhecimento.js"></script>
+<script defer src="./kb-local-import.js"></script>
 <script>
 'use strict';
 const KEY='tjes_offline_plain_v05'; // mantém os registros já salvos na v0.5
