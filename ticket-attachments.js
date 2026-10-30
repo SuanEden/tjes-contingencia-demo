@@ -3,6 +3,9 @@
 const input=document.getElementById('ticketAttachmentInput'),list=document.getElementById('ticketAttachmentList');
 if(!input||!list)return;
 const DB='tjes_ticket_anexos_v1',STORE='files',MAX_FILE=8*1024*1024,MAX_TOTAL=25*1024*1024;
+const saveButton=document.getElementById('ticketAttachmentSave'),saveStatus=document.getElementById('ticketAttachmentSaveStatus');
+function statusMessage(message){if(saveStatus)saveStatus.textContent=message}
+
 let currentId=null,pending=[],removed=new Set(),saved=[],generation=0,urls=[];
 function dbOpen(){return new Promise((resolve,reject)=>{
  const req=indexedDB.open(DB,1);
@@ -39,12 +42,12 @@ function display(){
    }
   }
   const remove=document.createElement('button');remove.type='button';remove.textContent='Remover';remove.setAttribute('aria-label','Remover '+item.name);
-  remove.onclick=()=>{if(item.temporary)pending=pending.filter(f=>f.id!==item.id);else removed.add(item.id);display()};actions.append(remove);row.append(actions);list.append(row);
+  remove.onclick=()=>{if(item.temporary)pending=pending.filter(f=>f.id!==item.id);else removed.add(item.id);statusMessage('Alterações ainda não salvas.');display()};actions.append(remove);row.append(actions);list.append(row);
  }
  if(!rows.length){const hint=document.createElement('p');hint.className='hint';hint.textContent='Nenhum arquivo anexado.';list.append(hint)}
 }
-function reset(){closeDialog();generation++;currentId=null;pending=[];removed.clear();saved=[];input.value='';display()}
-async function load(id){closeDialog();const n=++generation;currentId=id;pending=[];removed.clear();saved=[];input.value='';display();try{const rows=await getTicketFiles(id);if(n!==generation)return;saved=rows;display()}catch(e){if(n===generation)alert('Não foi possível carregar os anexos: '+e.message)}}
+function reset(){closeDialog();statusMessage('');generation++;currentId=null;pending=[];removed.clear();saved=[];input.value='';display()}
+async function load(id){closeDialog();statusMessage('');const n=++generation;currentId=id;pending=[];removed.clear();saved=[];input.value='';display();try{const rows=await getTicketFiles(id);if(n!==generation)return;saved=rows;display()}catch(e){if(n===generation)alert('Não foi possível carregar os anexos: '+e.message)}}
 input.addEventListener('change',()=>{
  for(const file of Array.from(input.files||[])){
   if(file.size>MAX_FILE){alert(file.name+': limite de 8 MB por arquivo.');continue}
@@ -53,7 +56,7 @@ input.addEventListener('change',()=>{
   if(all.reduce((sum,f)=>sum+Number(f.size||0),0)+file.size>MAX_TOTAL){alert('Limite de 25 MB por chamado.');break}
   pending.push({id:crypto.randomUUID(),file});
  }
- input.value='';display()
+ input.value='';statusMessage('Alterações ainda não salvas.');display()
 });
 async function save(id){
  if(!pending.length&&!removed.size)return;
@@ -66,6 +69,19 @@ async function save(id){
  pending=[];removed.clear();
  saved=await getTicketFiles(id);currentId=id;display()
 }
+if(saveButton)saveButton.addEventListener('click',async()=>{
+ if(saveButton.disabled)return;
+ if(!pending.length&&!removed.size){statusMessage('Não há alterações para salvar.');return}
+ if(!currentId){
+  statusMessage('Anexos selecionados. Para concluir, clique em “Salvar atendimento” no formulário.');
+  closeDialog();return;
+ }
+ saveButton.disabled=true;
+ statusMessage('Salvando anexos neste navegador...');
+ try{await save(currentId);statusMessage('Anexos salvos com sucesso neste navegador.')}
+ catch(e){statusMessage('Erro ao salvar: '+(e?.message||'verifique o armazenamento do navegador'))}
+ finally{saveButton.disabled=false}
+});
 async function removeTicket(id){await transact('readwrite',store=>{
  const req=store.index('ticketId').openCursor(IDBKeyRange.only(id));
  req.onsuccess=()=>{const cursor=req.result;if(cursor){cursor.delete();cursor.continue()}};
