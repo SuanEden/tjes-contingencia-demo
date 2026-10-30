@@ -623,6 +623,9 @@ $('#search').oninput=render;$('#dateFilter').onchange=render;$('#showAll').oncli
 let kbSelected=null;
 function kbNormalize(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function kbFormValues(){return Object.fromEntries(new FormData($('#ticketForm')).entries())}
+function kbNormalizeTemplate(text){
+ return String(text??'').replace(/\\r\\n/g,'\n').replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\r\n?/g,'\n');
+}
 function kbFill(text){
  const fields=kbFormValues(),clean=v=>String(v??'').trim(),now=new Date();
  const date=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
@@ -643,7 +646,7 @@ function kbFill(text){
   ATENDENTE:'',MATRICULA:'',MATRÍCULA:'',IP:''
  };
  const missing=[];
- const rendered=String(text??'').replace(/\[([^\]\r\n]{1,80})\]/g,(original,raw)=>{
+ const rendered=kbNormalizeTemplate(text).replace(/\[([^\]\r\n]{1,80})\]/g,(original,raw)=>{
   const key=raw.trim().normalize('NFC').toLocaleUpperCase('pt-BR').replace(/\s+/g,'_');
   if(!Object.prototype.hasOwnProperty.call(values,key))return original;
   const value=clean(values[key]);
@@ -749,8 +752,8 @@ function openKnowledgeEditor(title=null){
  if(title){
   $('#knowledgeTitle').value=title;
   $('#knowledgeSummary').value=KB_SUMMARIES[title]||title;
-  $('#knowledgeDescription').value=scripts.find(x=>x[0]===title)?.[1]||'';
-  $('#knowledgeResolution').value=KB_RESOLUTIONS[title]||'';
+  $('#knowledgeDescription').value=kbNormalizeTemplate(scripts.find(x=>x[0]===title)?.[1]||'');
+  $('#knowledgeResolution').value=kbNormalizeTemplate(KB_RESOLUTIONS[title]||'');
   $('#knowledgeTags').value=(KB_TAGS.find(x=>x[0]===title)?.[1]||[]).join(', ');
  }
  $('#knowledgeTitle').focus();
@@ -764,7 +767,7 @@ function persistKnowledge(){
 }
 $('#knowledgeForm').onsubmit=e=>{
  e.preventDefault();
- const title=$('#knowledgeTitle').value.trim(),summary=$('#knowledgeSummary').value.trim(),description=$('#knowledgeDescription').value.trim(),resolution=$('#knowledgeResolution').value.trim();
+ const title=$('#knowledgeTitle').value.trim(),summary=$('#knowledgeSummary').value.trim(),description=kbNormalizeTemplate($('#knowledgeDescription').value.trim()),resolution=kbNormalizeTemplate($('#knowledgeResolution').value.trim());
  const tags=[...new Set($('#knowledgeTags').value.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean))].slice(0,30);
  if(!title||!summary||!description){alert('Preencha título, resumo e descrição.');return}
  if(scripts.some(x=>x[0].toLocaleLowerCase('pt-BR')===title.toLocaleLowerCase('pt-BR')&&x[0]!==editingKnowledgeTitle)){alert('Já existe um conhecimento com esse título.');return}
@@ -817,7 +820,7 @@ function renderScripts(){
   if(customKnowledgeTitles.has(title)){const own=document.createElement('small');own.className='knowledge-own-label';own.textContent='Criado por você';strong.append(' ',own)}
   const actions=document.createElement('div');actions.className='row';
   const copy=document.createElement('button');copy.type='button';copy.textContent='Copiar texto';
-  copy.onclick=async()=>{try{await navigator.clipboard.writeText(body);copy.textContent='Copiado'}catch{const ta=document.createElement('textarea');ta.value=body;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove();copy.textContent='Copiado'}};
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(kbNormalizeTemplate(body));copy.textContent='Copiado'}catch{const ta=document.createElement('textarea');ta.value=kbNormalizeTemplate(body);document.body.append(ta);ta.select();document.execCommand('copy');ta.remove();copy.textContent='Copiado'}};
   actions.append(copy);
   if(customKnowledgeTitles.has(title)){
    const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.onclick=()=>openKnowledgeEditor(title);actions.append(edit);
@@ -825,7 +828,7 @@ function renderScripts(){
   }
   r.append(strong,actions);
   if(KB_SUMMARIES[title]){const summary=document.createElement('p');summary.className='knowledge-summary';summary.textContent='Resumo: '+KB_SUMMARIES[title];d.append(r,summary)}else d.append(r);
-  const pre=document.createElement('pre');pre.textContent=body;d.append(pre);$('#scriptArea').append(d);
+  const pre=document.createElement('pre');pre.textContent=kbNormalizeTemplate(body);d.append(pre);$('#scriptArea').append(d);
  }
 }
 $('#scriptSearch').oninput=renderScripts;
