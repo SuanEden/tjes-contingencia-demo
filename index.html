@@ -657,16 +657,48 @@ const KB_RECENTS_KEY='tjes_kb_recent_titles_v1';
 const KB_DEFAULT_TITLES=['SATE0013 — Reset de senha — acesso à intranet','SATE0903 — PJeOffice — Local Network Access Checks','SATE0275 — Solicitação de emissão/renovação de certificado','SATE0760 — Reset de senha de aposentado','SATE0375 — encerramento sem retorno','SATE0385 — solicitação de telefone ou ramal'];
 function kbRecents(){try{const saved=JSON.parse(localStorage.getItem(KB_RECENTS_KEY)||'[]');return Array.isArray(saved)?saved.filter(x=>typeof x==='string').slice(0,8):[]}catch{return []}}
 function kbRemember(title){try{localStorage.setItem(KB_RECENTS_KEY,JSON.stringify([title,...kbRecents().filter(x=>x!==title)].slice(0,8)))}catch{}}
+// Índice normalizado em memória: evita varrer e normalizar todos os textos a cada tecla.
+let kbSearchIndex=null;
+function invalidateKbSearchIndex(){kbSearchIndex=null}
+function getKbSearchIndex(){
+ if(kbSearchIndex)return kbSearchIndex;
+ const tagsByTitle=new Map(KB_TAGS.map(([title,terms])=>[title,Array.isArray(terms)?terms:[]]));
+ kbSearchIndex=scripts.map(([title,txt],index)=>{
+  const tags=tagsByTitle.get(title)||[],summary=KB_SUMMARIES[title]||'';
+  return {title,txt,index,tags:tags.map(kbNormalize).filter(Boolean),
+   normTitle:kbNormalize(title),normSummary:kbNormalize(summary),
+   normText:kbNormalize(txt),normTags:kbNormalize(tags.join(' '))};
+ });
+ return kbSearchIndex;
+}
 function kbCandidates(){
- const fields=kbFormValues(),query=kbNormalize($('#kbSearch').value),summary=kbNormalize(fields.problema);
- const ranked=scripts.map(([title,txt],index)=>{const tags=KB_TAGS.find(x=>x[0]===title)?.[1]||[];const hits=tags.filter(tag=>summary.includes(kbNormalize(tag))).length;const manual=query&&(kbNormalize(title+' '+txt+' '+tags.join(' ')).includes(query));return {title,txt,index,hits,manual}});
- if(query)return {label:'Resultados da pesquisa',items:ranked.filter(x=>x.manual).sort((a,b)=>b.hits-a.hits).slice(0,12)};
- const matches=ranked.filter(x=>x.hits>0).sort((a,b)=>b.hits-a.hits);
- if(summary&&matches.length)return {label:'Sugestões para o resumo',items:matches.slice(0,8)};
- const recent=kbRecents().map(title=>ranked.find(x=>x.title===title)).filter(Boolean);
+ const index=getKbSearchIndex(),query=kbNormalize($('#kbSearch').value);
+ const summary=kbNormalize($('#ticketForm').elements.namedItem('problema').value);
+ const terms=summary.split(/\s+/).filter(t=>t.length>=3);
+ const rank=item=>{
+  let score=0;
+  if(summary){
+   if(item.normSummary===summary)score+=120;
+   else if(item.normSummary.includes(summary))score+=75;
+   if(item.normTitle.includes(summary))score+=65;
+   for(const tag of item.tags)if(tag.length>2&&summary.includes(tag))score+=25;
+   for(const term of terms)if(item.normTitle.includes(term)||item.normSummary.includes(term))score+=4;
+  }
+  return score;
+ };
+ if(query){
+  const found=index.map(item=>({item,score:(item.normTitle.includes(query)?90:0)+(item.normSummary.includes(query)?70:0)+(item.normTags.includes(query)?45:0)+(item.normText.includes(query)?10:0)+rank(item)})).filter(x=>x.score>0);
+  found.sort((a,b)=>b.score-a.score||a.item.index-b.item.index);
+  return {label:'Resultados da pesquisa',items:found.slice(0,12).map(({item,score})=>({...item,hits:score}))};
+ }
+ if(summary){
+  const found=index.map(item=>({item,score:rank(item)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.item.index-b.item.index);
+  if(found.length)return {label:'Sugestões para o resumo',items:found.slice(0,8).map(({item,score})=>({...item,hits:score}))};
+ }
+ const byTitle=new Map(index.map(item=>[item.title,item]));
+ const recent=kbRecents().map(title=>byTitle.get(title)).filter(Boolean);
  if(recent.length)return {label:'Seus modelos recentes',items:recent};
- const defaults=KB_DEFAULT_TITLES.map(title=>ranked.find(x=>x.title===title)).filter(Boolean);
- return {label:'Modelos sugeridos para começar',items:defaults};
+ return {label:'Modelos sugeridos para começar',items:KB_DEFAULT_TITLES.map(title=>byTitle.get(title)).filter(Boolean)};
 }
 function kbRender(){
  const area=$('#kbResults');area.replaceChildren();const {label,items}=kbCandidates();
@@ -674,7 +706,7 @@ function kbRender(){
  for(const item of items){
   const b=document.createElement('button');b.className='kb-option';b.type='button';
   const strong=document.createElement('strong');strong.textContent=item.title;
-  const sub=document.createElement('small');sub.textContent=item.hits?item.hits+' palavra(s)-chave correspondente(s)':'Modelo disponível';
+  const sub=document.createElement('small');sub.textContent=item.hits?'Correspondência com a pesquisa ou resumo':'Modelo disponível';
   b.append(strong,sub);
   b.onclick=()=>{kbSelected=item;kbPreview();show('form');kbApply('descricao');kbRender()};
   area.append(b);
@@ -727,6 +759,7 @@ $('#newKnowledge').onclick=()=>openKnowledgeEditor();
 $('#cancelKnowledge').onclick=closeKnowledgeEditor;
 $('#discardKnowledge').onclick=closeKnowledgeEditor;
 function persistKnowledge(){
+ invalidateKbSearchIndex();
  localStorage.setItem(TRANSFER_KB_KEY,JSON.stringify(knowledgeSnapshot()));
 }
 $('#knowledgeForm').onsubmit=e=>{
@@ -757,6 +790,7 @@ $('#knowledgeForm').onsubmit=e=>{
 };
 function restoreKnowledgeInMemory(snapshot){
  scripts.splice(0,scripts.length,...snapshot.scripts);
+ invalidateKbSearchIndex();
  KB_TAGS.splice(0,KB_TAGS.length,...snapshot.tags);
  for(const key of Object.keys(KB_SUMMARIES))delete KB_SUMMARIES[key];
  for(const key of Object.keys(KB_RESOLUTIONS))delete KB_RESOLUTIONS[key];
@@ -806,6 +840,7 @@ function applyKnowledge(snapshot){
  try{
   localStorage.setItem(TRANSFER_KB_KEY,JSON.stringify(snapshot));
   scripts.splice(0,scripts.length,...snapshot.scripts);
+  invalidateKbSearchIndex();
   KB_TAGS.splice(0,KB_TAGS.length,...snapshot.tags);
   for(const k of Object.keys(KB_RESOLUTIONS))delete KB_RESOLUTIONS[k];
   for(const k of Object.keys(KB_SUMMARIES))delete KB_SUMMARIES[k];
