@@ -20,7 +20,7 @@ function getTicketFiles(id){if(!id)return Promise.resolve([]);return transact('r
 function readable(size){return size<1024?size+' B':size<1048576?(size/1024).toFixed(1)+' KB':(size/1048576).toFixed(1)+' MB'}
 const toggle=document.getElementById('ticketAttachmentToggle'),panel=document.getElementById('ticketAttachmentPanel'),counter=document.getElementById('ticketAttachmentCount');
 function setOpen(open){if(!toggle||!panel)return;panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Fechar anexos do chamado':'Abrir anexos do chamado');toggle.title=open?'Fechar anexos':'Anexos do chamado'}
-if(toggle)toggle.addEventListener('click',()=>setOpen(panel.hidden));
+// O botão é controlado pelo formulário principal para funcionar mesmo sem este módulo.
 function updateCount(count){if(!counter)return;counter.hidden=count===0;counter.textContent=String(count);toggle?.setAttribute('title',count?count+' anexo(s) · clique para abrir':'Anexos do chamado')}
 function resetUrls(){for(const url of urls)URL.revokeObjectURL(url);urls=[]}
 function display(){
