@@ -48,7 +48,11 @@ $('#chiefExport').addEventListener('click',async()=>{
   $('#chiefStatus').textContent='XML baixado. '+(chat?'Teams aberto.':'Abra o Teams manualmente.')+' Anexe '+fileName+' e confirme o envio.';
  }catch(e){
   if(e?.name==='AbortError'){$('#chiefStatus').textContent='Compartilhamento cancelado. Nenhum envio foi realizado.';return}
-  $('#chiefStatus').textContent='Não foi possível abrir o compartilhamento: '+(e?.message||'tente novamente');
+  // Se o navegador negar navigator.share (Permission denied), usar o fluxo compatível com desktop.
+  download(fileName,await blob.text());
+  const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg+' Arquivo: '+fileName+'.');
+  const chat=window.open(teams,'_blank','noopener,noreferrer');
+  $('#chiefStatus').textContent='O compartilhamento do dispositivo foi bloqueado. XML baixado; '+(chat?'Teams aberto.':'abra o Teams manualmente.')+' Anexe '+fileName+' e confirme o envio.';
  }
 });
 window.tjesChiefXML={xmlFor,onlyToday,columns};
