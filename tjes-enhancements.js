@@ -83,6 +83,17 @@ function renderDashboardMetrics(){
  const tally={};for(const t of filtered){const cat=category(t);tally[cat]=(tally[cat]||0)+1}
  $('#tjesCategorySummary').textContent='Por categoria (estimativa baseada no resumo): '+(Object.entries(tally).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+': '+v).join(' • ')||'nenhum chamado');
 }
-window.tjesEnhance={renderList,renderDashboardMetrics,refreshAttachmentCounts,readTransfer:record};
+
+// Orientação contextual na lateral; o formulário original permanece intacto.
+const guide=document.createElement('section');guide.id='tjesKnowledgeGuide';guide.hidden=true;
+guide.innerHTML='<strong>Dados a conferir neste conhecimento</strong><p class="kb-small" id="tjesGuideText"></p>';
+$('#kbSide')?.append(guide);
+function showGuide(item){
+ if(!item){guide.hidden=true;return}
+ const text=String(item.txt||''),tokens=[...new Set([...text.matchAll(/\[([^\]\n]{2,45})\]/g)].map(x=>x[1]))].slice(0,14);
+ guide.hidden=false;
+ $('#tjesGuideText').textContent='Base: '+item.title+'. '+(tokens.length?'Verifique os campos: '+tokens.join(', ')+'. ':'Confira a situação informada pelo usuário. ')+'Registre apenas ações efetivamente realizadas; a solução da base é uma orientação, não comprovação de execução.';
+}
+window.tjesEnhance={renderList,renderDashboardMetrics,refreshAttachmentCounts,readTransfer:record,showGuide};
 renderList();renderDashboardMetrics();refreshAttachmentCounts();
 })();
