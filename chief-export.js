@@ -28,15 +28,23 @@ function download(name,txt){
  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();
  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
-$('#chiefExport').addEventListener('click',async()=>{
- const proceed=confirm('Você será redirecionado ao Microsoft Teams. O relatório XML será baixado e você precisará anexar o arquivo manualmente na conversa antes de enviar. Deseja continuar?');
- if(!proceed)return;
+const notice=document.createElement('dialog');
+notice.className='chief-export-dialog';
+notice.setAttribute('aria-labelledby','chiefNoticeTitle');
+notice.innerHTML='<div class="chief-dialog-content"><div class="chief-dialog-icon" aria-hidden="true">↗</div><h2 id="chiefNoticeTitle">Você será redirecionado ao Teams</h2><p>O relatório será baixado no seu computador e a conversa com o destinatário será aberta no Microsoft Teams.</p><ol><li>No Teams, clique em <strong>Anexar arquivo</strong>.</li><li>Selecione o relatório XML que acabou de ser baixado.</li><li>Confira a mensagem e clique em <strong>Enviar</strong>.</li></ol><p class="chief-dialog-note">Importante: o arquivo não é anexado automaticamente. Você precisa selecioná-lo e confirmar o envio no Teams.</p><div class="chief-dialog-actions"><button type="button" id="chiefCancel">Cancelar</button><button type="button" class="primary" id="chiefContinue">Continuar para o Teams</button></div></div>';
+document.body.append(notice);
+const dialogStyle=document.createElement('style');
+dialogStyle.textContent='.chief-export-dialog{width:min(520px,calc(100% - 32px));padding:0;border:0;border-radius:14px;box-shadow:0 22px 70px #10283b55;color:#26374a}.chief-export-dialog::backdrop{background:#10283b99;backdrop-filter:blur(3px)}.chief-dialog-content{padding:26px}.chief-dialog-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:#e5f2fb;color:#17649e;font-size:24px;font-weight:700;margin-bottom:15px}.chief-dialog-content h2{font-size:21px;margin:0 0 10px;color:#1e3d58}.chief-dialog-content p{line-height:1.5;margin:8px 0}.chief-dialog-content ol{padding-left:22px;line-height:1.65;margin:15px 0}.chief-dialog-note{padding:11px 13px;background:#fff7e5;border-left:4px solid #d39b28;border-radius:4px;font-size:13px}.chief-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px;flex-wrap:wrap}.chief-dialog-actions button{padding:10px 15px;border-radius:7px}.chief-dialog-actions .primary{background:#17649e;color:#fff;border-color:#17649e}@media(max-width:480px){.chief-dialog-content{padding:20px}.chief-dialog-actions{flex-direction:column-reverse}.chief-dialog-actions button{width:100%}}';
+document.head.append(dialogStyle);
+$('#chiefExport').addEventListener('click',()=>notice.showModal());
+$('#chiefCancel').addEventListener('click',()=>notice.close());
+async function exportReport(){
  const recipient=CHIEF_RECIPIENT,tickets=onlyToday();
  if(!tickets.length){$('#chiefStatus').textContent='Nenhum atendimento criado hoje neste navegador.';return}
  const date=localDay(new Date()),fileName='TJES_chefia_'+date+'.xml';
  const msg='Olá! Segue o relatório TJES de '+new Date().toLocaleDateString('pt-BR')+', enviado pela equipe TJES. Total: '+tickets.length+' chamado(s).';
  const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg+' Arquivo: '+fileName+'.');
- // Abrir a aba no gesto original do clique, antes de qualquer await, para evitar bloqueio de pop-up.
+ // A abertura ocorre diretamente no clique de confirmação do pop-up para evitar bloqueio do navegador.
  const chat=window.open('about:blank','_blank');
  const blob=new Blob([xmlFor(tickets,'Equipe TJES')],{type:'application/xml;charset=utf-8'});
  const file=new File([blob],fileName,{type:'application/xml'});
@@ -49,15 +57,17 @@ $('#chiefExport').addEventListener('click',async()=>{
   }
   download(fileName,await blob.text());
   if(chat)chat.location.href=teams;
-  $('#chiefStatus').textContent='XML baixado. '+(chat?'Conversa do Teams aberta.':'O navegador bloqueou a nova janela;')+' Próximo passo: no Teams, clique em Anexar, selecione '+fileName+' e envie a mensagem.';
-
+  $('#chiefStatus').textContent='XML baixado. '+(chat?'Conversa do Teams aberta.':'O navegador bloqueou a nova janela;')+' No Teams, clique em Anexar, selecione '+fileName+' e envie a mensagem.';
  }catch(e){
   if(e?.name==='AbortError'){if(chat)chat.close();$('#chiefStatus').textContent='Compartilhamento cancelado. Nenhum envio foi realizado.';return}
   download(fileName,await blob.text());
   if(chat)chat.location.href=teams;
-  $('#chiefStatus').textContent='Compartilhamento do dispositivo indisponível. XML baixado. '+(chat?'Conversa do Teams aberta.':'Pop-up bloqueado: permita pop-ups para este site ou abra o Teams manualmente.')+' Próximo passo: no Teams, clique em Anexar e selecione '+fileName+'.';
-
+  $('#chiefStatus').textContent='XML baixado. '+(chat?'Conversa do Teams aberta.':'Pop-up bloqueado: permita pop-ups para este site ou abra o Teams manualmente.')+' No Teams, clique em Anexar e selecione '+fileName+'.';
  }
+}
+$('#chiefContinue').addEventListener('click',()=>{
+ notice.close();
+ exportReport();
 });
 window.tjesChiefXML={xmlFor,onlyToday,columns};
 })();
