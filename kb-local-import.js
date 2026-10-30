@@ -40,6 +40,20 @@ async function loadArticles(){
   return local;
  }
 }
+function articleHeading(article){
+ const lines=String(article.text||'').split('\n').map(s=>s.trim()).filter(Boolean);
+ const code=String(article.key||'').split('|')[0];
+ const first=lines.findIndex(line=>line.startsWith(code));
+ const relevant=lines.slice(first<0?0:first+1);
+ const parts=[];
+ for(const line of relevant){
+  if(/^(GSC|CRIADO EM|PUBLICADO|VISUALIZAÇÕES|PROBLEMA|SOLUÇÃO|AMBIENTE|CAUSA|—)/i.test(line))break;
+  if(/^(faq|cat\d+)$/i.test(line))break;
+  if(line.length<180)parts.push(line);
+  if(parts.length===2)break;
+ }
+ return parts.join(' ').trim()||String(article.title||code).replace(/^[A-Z0-9]+\s*[·–—-]\s*(CONHECIMENTO|OUTRO)\s*$/i,'')||code;
+}
 function render(){
  results.replaceChildren();
  const manual=normalize(search.value.trim());
@@ -68,7 +82,7 @@ function render(){
  for(const {r} of matches){
   const card=document.createElement('div');card.className='script';
   const top=document.createElement('div');top.className='row between';
-  const title=document.createElement('strong');title.textContent=(String(r.key||'').split('|')[0]||'Artigo')+' — '+String(r.title||'Documento');
+  const title=document.createElement('strong');title.textContent=(String(r.key||'').split('|')[0]||'Artigo')+' — '+articleHeading(r);
   const copy=document.createElement('button');copy.type='button';copy.textContent='Copiar texto';
   copy.onclick=async()=>{try{await navigator.clipboard.writeText(String(r.text||''));copy.textContent='Copiado'}catch{copy.textContent='Não foi possível copiar'}};
   top.append(title,copy);card.append(top);
