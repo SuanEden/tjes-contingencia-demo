@@ -625,7 +625,35 @@ $('#search').oninput=render;$('#dateFilter').onchange=render;$('#showAll').oncli
 let kbSelected=null;
 function kbNormalize(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function kbFormValues(){return Object.fromEntries(new FormData($('#ticketForm')).entries())}
-function kbFill(text){const fields=kbFormValues();const replacements={ATENDENTE:'',EMAIL_CHEFIA:(fields.chefia||'').includes('@')?fields.chefia:'',ENDERECO:fields.endereco||'',MATRICULA:'',IP:'',NOME:fields.nome,TELEFONE:fields.telefone,CHAMADO:fields.chamado,CPF:fields.cpf,EMAIL:fields.email,OCUPACAO:fields.ocupacao,SECAO:fields.secao,DEPARTAMENTO:fields.departamento,EDIFICIO:fields.edificio,SALA:fields.sala,RAMAL:fields.ramal,PROBLEMA:fields.problema};const missing=[];const rendered=text.replace(/\[([A-Z_]+)\]/g,(match,key)=>{const value=replacements[key];if(!value){missing.push(key);return match}return value});return {rendered,missing}}
+function kbFill(text){
+ const fields=kbFormValues(),clean=v=>String(v??'').trim(),now=new Date();
+ const date=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+ const time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+ const place=[clean(fields.edificio),clean(fields.sala)].filter(Boolean).join(' — ')||clean(fields.endereco);
+ const values={
+  NOME:fields.nome,USUARIO:fields.nome,SOLICITANTE:fields.nome,
+  EMAIL:fields.email,'E-MAIL':fields.email,EMAIL_USUARIO:fields.email,
+  EMAIL_CHEFIA:clean(fields.chefia).includes('@')?fields.chefia:'',
+  TELEFONE:fields.telefone,CELULAR:fields.telefone,RAMAL:fields.ramal,
+  SETOR:fields.secao||fields.departamento,SECAO:fields.secao,SEÇÃO:fields.secao,
+  DEPARTAMENTO:fields.departamento,LOCAL:place,LOCALIZACAO:place,LOCALIZAÇÃO:place,
+  EDIFICIO:fields.edificio,EDIFÍCIO:fields.edificio,SALA:fields.sala,ENDERECO:fields.endereco,ENDEREÇO:fields.endereco,
+  DATA:date,DATA_ATENDIMENTO:date,HORA:time,DATA_HORA:date+' '+time,
+  CHAMADO:fields.chamado,PROTOCOLO:fields.chamado,CPF:fields.cpf,
+  CARGO:fields.ocupacao,OCUPACAO:fields.ocupacao,OCUPAÇÃO:fields.ocupacao,
+  CHEFIA:fields.chefia,RESUMO:fields.problema,PROBLEMA:fields.problema,
+  ATENDENTE:'',MATRICULA:'',MATRÍCULA:'',IP:''
+ };
+ const missing=[];
+ const rendered=String(text??'').replace(/\[([^\]\r\n]{1,80})\]/g,(original,raw)=>{
+  const key=raw.trim().normalize('NFC').toLocaleUpperCase('pt-BR').replace(/\s+/g,'_');
+  if(!Object.prototype.hasOwnProperty.call(values,key))return original;
+  const value=clean(values[key]);
+  if(!value){missing.push(raw.trim());return original}
+  return value;
+ });
+ return {rendered,missing};
+}
 // O histórico guarda apenas títulos de modelos neste navegador, nunca dados do chamado.
 const KB_RECENTS_KEY='tjes_kb_recent_titles_v1';
 const KB_DEFAULT_TITLES=['SATE0013 — Reset de senha — acesso à intranet','SATE0903 — PJeOffice — Local Network Access Checks','SATE0275 — Solicitação de emissão/renovação de certificado','SATE0760 — Reset de senha de aposentado','SATE0375 — encerramento sem retorno','SATE0385 — solicitação de telefone ou ramal'];
@@ -663,11 +691,12 @@ function kbApply(field){
  if(!kbSelected)return;
  const form=$('#ticketForm'),target=form.elements.namedItem(field),summary=form.elements.namedItem('problema');
  if(!target||!summary)return;
- const resolutionTemplate=field==='resolucao'&&KB_RESOLUTIONS[kbSelected.title];
- const {rendered}=kbFill(resolutionTemplate||kbSelected.txt);
+ const resolutionTemplate=field==='resolucao'?KB_RESOLUTIONS[kbSelected.title]:null;
+ if(field==='resolucao'&&!resolutionTemplate){alert('Este conhecimento não possui modelo de resolução. Registre somente as ações realmente realizadas.');return}
+ const {rendered}=kbFill(field==='resolucao'?resolutionTemplate:kbSelected.txt);
  const newSummary=KB_SUMMARIES[kbSelected.title]||kbSelected.title;
  // O resumo é atualizado sem confirmação; somente a substituição de uma descrição preenchida requer autorização.
- if(field==='descricao' && target.value.trim() && target.value!==rendered && !confirm('A descrição já contém texto. Deseja substituí-la pelo modelo selecionado?'))return;
+ if(target.value.trim() && target.value!==rendered && !confirm('O campo já contém texto. Deseja substituí-lo pelo modelo selecionado?'))return;
  // Atualizar ambos na mesma ação. O listener do resumo limpa a sugestão anterior.
  kbRemember(kbSelected.title);
  target.value=rendered;
