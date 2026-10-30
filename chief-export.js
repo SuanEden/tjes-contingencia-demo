@@ -47,12 +47,14 @@ $('#chiefExport').addEventListener('click',async()=>{
   }
   download(fileName,await blob.text());
   if(chat)chat.location.href=teams;
-  $('#chiefStatus').textContent='XML baixado. '+(chat?'Conversa do Teams aberta.':'O navegador bloqueou a nova janela;')+' Anexe '+fileName+' e confirme o envio.';
+  $('#chiefStatus').textContent='XML baixado. '+(chat?'Conversa do Teams aberta.':'O navegador bloqueou a nova janela;')+' Próximo passo: no Teams, clique em Anexar, selecione '+fileName+' e envie a mensagem.';
+  alert('RELATÓRIO BAIXADO!\n\nAgora, na conversa do Teams, clique em Anexar, selecione o arquivo '+fileName+' que foi baixado e envie a mensagem.\n\nO envio só será concluído depois da sua confirmação no Teams.');
  }catch(e){
   if(e?.name==='AbortError'){if(chat)chat.close();$('#chiefStatus').textContent='Compartilhamento cancelado. Nenhum envio foi realizado.';return}
   download(fileName,await blob.text());
   if(chat)chat.location.href=teams;
-  $('#chiefStatus').textContent='Compartilhamento do dispositivo indisponível. XML baixado. '+(chat?'Conversa do Teams aberta.':'Pop-up bloqueado: permita pop-ups para este site ou abra o Teams manualmente.')+' Anexe '+fileName+' e confirme o envio.';
+  $('#chiefStatus').textContent='Compartilhamento do dispositivo indisponível. XML baixado. '+(chat?'Conversa do Teams aberta.':'Pop-up bloqueado: permita pop-ups para este site ou abra o Teams manualmente.')+' Próximo passo: no Teams, clique em Anexar e selecione '+fileName+'.';
+  alert('RELATÓRIO BAIXADO!\n\nAgora, no Teams, abra a conversa do destinatário, clique em Anexar, selecione o arquivo '+fileName+' que foi baixado e envie a mensagem.\n\nO envio só será concluído depois da sua confirmação no Teams.');
  }
 });
 window.tjesChiefXML={xmlFor,onlyToday,columns};
