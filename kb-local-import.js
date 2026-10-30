@@ -1,12 +1,12 @@
 (function(){
 'use strict';
-// Consulta local da biblioteca documental. Não há importação nem envio de arquivos.
+// Biblioteca documental distribuída com o site; preserva somente a consulta local como contingência.
 const DB='tjes_kb_importada_v1',STORE='artigos';
 const panel=document.querySelector('#view-scripts .panel'),search=document.querySelector('#scriptSearch'),scriptArea=document.querySelector('#scriptArea');
 if(!panel||!search||!scriptArea)return;
 const wrap=document.createElement('section');wrap.id='kbImportedLibrary';
 wrap.className='knowledge-document-library';
-wrap.innerHTML='<h3>Artigos da biblioteca</h3><p class="hint" id="kbLocalStatus" aria-live="polite">Consultando documentos disponíveis...</p><div id="kbLocalResults"></div>';
+wrap.innerHTML='<h3>Artigos da biblioteca</h3><p class="hint" id="kbLocalStatus" aria-live="polite">Carregando os artigos da Base de Conhecimento...</p><div id="kbLocalResults"></div>';
 scriptArea.before(wrap);
 const status=wrap.querySelector('#kbLocalStatus'),results=wrap.querySelector('#kbLocalResults');
 const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -21,14 +21,33 @@ function readAll(){return new Promise((resolve,reject)=>{
  opening.onsuccess=()=>{const db=opening.result;const tx=db.transaction(STORE,'readonly');
  const request=tx.objectStore(STORE).getAll();request.onsuccess=()=>resolve(request.result||[]);request.onerror=()=>reject(request.error);tx.oncomplete=()=>db.close();};
 });}
+async function loadArticles(){
+ try{
+  const response=await fetch('./biblioteca-tjes.json',{cache:'no-cache'});
+  if(!response.ok)throw Error('Biblioteca indisponível (HTTP '+response.status+')');
+  const payload=await response.json();
+  if(payload.version!==1||!Array.isArray(payload.records)||payload.records.length!==472)throw Error('Índice de artigos inválido');
+  const unique=new Set();
+  return payload.records.map((record,i)=>{
+   if(!record||typeof record!=='object'||typeof record.id!=='string'||!record.id||typeof record.text!=='string'||record.text.length>100000||unique.has(record.id))throw Error('Artigo inválido '+i);
+   unique.add(record.id);
+   return {key:record.id+'|'+(record.path||i),title:String(record.title||record.id),category:String(record.category||''),group:String(record.group||''),pages:Number(record.pages)||0,text:record.text};
+  });
+ }catch(e){
+  const local=await readAll();
+  if(!local.length)throw e;
+  status.textContent='Biblioteca online temporariamente indisponível; utilizando os artigos já armazenados neste navegador.';
+  return local;
+ }
+}
 function render(){
  results.replaceChildren();
  const manual=normalize(search.value.trim());
  const summary=summaryInput?normalize(summaryInput.value.trim()):'';
  const q=manual||summary;
- if(error){status.textContent='Não foi possível consultar os artigos armazenados neste navegador.';return}
- if(!articles.length){status.textContent='Nenhum artigo documental disponível neste navegador. Os modelos da Base de Conhecimento continuam acessíveis abaixo.';return}
- if(q.length<3){status.textContent=articles.length+' artigos disponíveis neste navegador. Digite um resumo ou pesquise por título, código ou assunto.';return}
+ if(error){status.textContent='Não foi possível carregar a biblioteca. Atualize a página e tente novamente.';return}
+ if(!articles.length){status.textContent='Artigos indisponíveis. Os modelos da Base de Conhecimento continuam acessíveis abaixo.';return}
+ if(q.length<3){status.textContent=articles.length+' artigos disponíveis na Base de Conhecimento. Digite um resumo ou pesquise por título, código ou assunto.';return}
  const terms=significantTerms(q);
  if(!terms.length){status.textContent='Escreva um assunto mais específico para encontrar artigos.';return}
  const matches=[];
@@ -63,7 +82,7 @@ function render(){
 function scheduleRender(){if(searchTimer!==null)clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchTimer=null;render()},130)}
 search.addEventListener('input',scheduleRender);
 if(summaryInput)summaryInput.addEventListener('input',scheduleRender);
-readAll().then(rows=>{articles=rows;indexed=rows.map(article=>({
+loadArticles().then(rows=>{articles=rows;indexed=rows.map(article=>({
  article,head:normalize(String(article.key||'')+' '+String(article.title||'')),
  group:normalize(String(article.category||'')+' '+String(article.group||'')),body:normalize(article.text)
 }));render()}).catch(()=>{error=true;render()});
