@@ -9,6 +9,14 @@ wrap.className='knowledge-document-library';
 wrap.innerHTML='<h3>Artigos da biblioteca</h3><p class="hint" id="kbLocalStatus" aria-live="polite">Carregando os artigos da Base de Conhecimento...</p><div id="kbLocalResults"></div>';
 scriptArea.before(wrap);
 const status=wrap.querySelector('#kbLocalStatus'),results=wrap.querySelector('#kbLocalResults');
+const sidebar=document.querySelector('#kbSide'),sideSearch=document.querySelector('#kbSearch');
+const sideLibrary=document.createElement('section');
+sideLibrary.id='kbSideImportedResults';
+sideLibrary.setAttribute('aria-label','Artigos encontrados na biblioteca');
+sideLibrary.innerHTML='<h3>Artigos encontrados</h3><p class="kb-small" id="kbSideImportedStatus" aria-live="polite"></p><div id="kbSideImportedItems"></div>';
+const sideStatus=sideLibrary.querySelector('#kbSideImportedStatus'),sideItems=sideLibrary.querySelector('#kbSideImportedItems');
+if(sidebar)sidebar.append(sideLibrary);
+
 const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
 let articles=[],indexed=[],error=false,searchTimer=null;
 const summaryInput=document.querySelector('#ticketForm [name="problema"]');
@@ -155,8 +163,42 @@ function render(){
   details.append(summary,body);card.append(details);results.append(card);
  }
 }
-function scheduleRender(){if(searchTimer!==null)clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchTimer=null;render()},130)}
+
+function renderSideLibrary(){
+ if(!sidebar)return;
+ const manual=normalize(sideSearch?.value.trim()||'');
+ const summary=normalize(summaryInput?.value.trim()||'');
+ const query=manual||summary;
+ sideItems.replaceChildren();
+ if(error||!indexed.length){sideLibrary.hidden=true;return}
+ if(query.length<3){sideLibrary.hidden=true;return}
+ const terms=significantTerms(query);
+ if(!terms.length){sideLibrary.hidden=true;return}
+ const found=[];
+ for(const entry of indexed){
+  const score=relevance(entry,query,terms);
+  if(score>0)found.push({article:entry.article,score});
+ }
+ found.sort((a,b)=>b.score-a.score);
+ sideLibrary.hidden=false;
+ sideStatus.textContent=found.length+' artigo(s) encontrado(s). Role a lista para ver todos.';
+ if(!found.length){sideItems.textContent='Nenhum artigo encontrado para este termo.';return}
+ const fragment=document.createDocumentFragment();
+ for(const {article} of found){
+  const details=document.createElement('details');details.className='kb-side-article';
+  const heading=document.createElement('summary');
+  heading.textContent=(String(article.key||'').split('|')[0]||'Artigo')+' — '+articleHeading(article);
+  const info=document.createElement('small');info.textContent=[article.category,article.group].filter(Boolean).join(' • ');
+  const pre=document.createElement('pre');pre.textContent=String(article.text||'').slice(0,45000);
+  const copy=document.createElement('button');copy.type='button';copy.textContent='Copiar texto';
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(String(article.text||''));copy.textContent='Copiado!'}catch{copy.textContent='Falha ao copiar'}};
+  details.append(heading,info,pre,copy);fragment.append(details);
+ }
+ sideItems.append(fragment);
+}
+function scheduleRender(){if(searchTimer!==null)clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchTimer=null;render();renderSideLibrary()},130)}
 search.addEventListener('input',scheduleRender);
+if(sideSearch)sideSearch.addEventListener('input',scheduleRender);
 if(summaryInput)summaryInput.addEventListener('input',scheduleRender);
-loadArticles().then(rows=>{articles=rows;indexed=rows.map(makeEntry);render()}).catch(()=>{error=true;render()});
+loadArticles().then(rows=>{articles=rows;indexed=rows.map(makeEntry);render();renderSideLibrary()}).catch(()=>{error=true;render();renderSideLibrary()});
 })();
