@@ -196,9 +196,54 @@ function renderSideLibrary(){
  }
  sideItems.append(fragment);
 }
+
+/* Converte artigos documentais em modelos padrão, sem alterar os documentos originais. */
+const libraryAddedTitles=new Set();
+window.tjesLibraryModelTitles=libraryAddedTitles;
+function extractLibraryPart(text,heading,nextHeading){
+ const start=new RegExp('(?:^|\\n)\\s*'+heading+'\\s*\\n','i').exec(text);
+ if(!start)return '';
+ const rest=text.slice(start.index+start[0].length);
+ const end=new RegExp('(?:^|\\n)\\s*(?:'+nextHeading+'|GSC|SATE\\d{4}\\s*[—-]\\s*Base de Conhecimento)\\s*(?:\\n|$)','i').exec(rest);
+ return (end?rest.slice(0,end.index):rest).trim().replace(/[ \t]+/g,' ').slice(0,7000);
+}
+function registerLibraryModels(){
+ if(typeof scripts==='undefined'||typeof KB_TAGS==='undefined'||typeof KB_SUMMARIES==='undefined')return;
+ libraryAddedTitles.clear();
+ const existingCodes=new Set(scripts.map(([title])=>(String(title).match(/\bSATE\d{4}\b/i)||[])[0]?.toUpperCase()).filter(Boolean));
+ const existingTitles=new Set(scripts.map(([title])=>title));
+ let added=0;
+ for(const article of articles){
+  const code=String(article.key||'').split('|')[0].toUpperCase();
+  if(existingCodes.has(code))continue;
+  const heading=articleHeading(article).replace(/\s+/g,' ').trim();
+  const title=code+' — '+heading.slice(0,140);
+  if(existingTitles.has(title))continue;
+  const problem=extractLibraryPart(article.text,'PROBLEMA','SOLUÇÃO|CAUSA|AMBIENTE');
+  const solution=extractLibraryPart(article.text,'SOLUÇÃO','PROBLEMA|CAUSA|AMBIENTE');
+  const description=(
+   'Atendimento relacionado a '+heading+'.\n'+
+   (problem?'\nInformações descritas na base '+code+':\n'+problem+'\n':'')+
+   '\nDetalhes informados pelo usuário: [DETALHES].\n'+
+   'Registrar apenas informações confirmadas durante o atendimento.'
+  ).slice(0,14000);
+  scripts.push([title,description]);
+  KB_SUMMARIES[title]=heading.slice(0,250);
+  KB_TAGS.push([title,[code,article.category,article.group,...heading.split(/\s+/).filter(x=>x.length>3).slice(0,12)].filter(Boolean)]);
+  // A solução original fica disponível no artigo; não é marcada como executada.
+  if(solution)KB_RESOLUTIONS[title]='Orientação de referência da base '+code+' (confirme cada ação antes de registrar como realizada):\n'+solution.slice(0,6500)+'\n\nTratativa efetivamente realizada: [TRATATIVA].';
+  libraryAddedTitles.add(title);existingCodes.add(code);existingTitles.add(title);added++;
+ }
+ if(typeof invalidateKbSearchIndex==='function')invalidateKbSearchIndex();
+ if(typeof kbRender==='function')kbRender();
+ if(typeof renderScripts==='function')renderScripts();
+ return added;
+}
+window.tjesRefreshArticleModels=registerLibraryModels;
+
 function scheduleRender(){if(searchTimer!==null)clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchTimer=null;render();renderSideLibrary()},130)}
 search.addEventListener('input',scheduleRender);
 if(sideSearch)sideSearch.addEventListener('input',scheduleRender);
 if(summaryInput)summaryInput.addEventListener('input',scheduleRender);
-loadArticles().then(rows=>{articles=rows;indexed=rows.map(makeEntry);render();renderSideLibrary()}).catch(()=>{error=true;render();renderSideLibrary()});
+loadArticles().then(rows=>{articles=rows;indexed=rows.map(makeEntry);registerLibraryModels();render();renderSideLibrary()}).catch(()=>{error=true;render();renderSideLibrary()});
 })();
