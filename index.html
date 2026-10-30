@@ -231,7 +231,7 @@ html[data-theme="dark"] .ticket-attachment-dialog{background:#1d2d40;color:#f0f5
 <div class="field"><label for="f-chamado">Chamado / Protocolo</label><input id="f-chamado" name="chamado" maxlength="80"></div><div class="field"><label for="f-cpf">CPF</label><input id="f-cpf" name="cpf" maxlength="20"></div><div class="field"><label for="f-ocupacao">Ocupação</label><input id="f-ocupacao" name="ocupacao" maxlength="160"></div><div class="field"><label for="f-endereco">Endereço</label><input id="f-endereco" name="endereco" maxlength="220"></div><div class="field"><label for="f-chefia">Chefia</label><input id="f-chefia" name="chefia" maxlength="180"></div>
 <div class="field"><label>Status</label><select name="status"><option>Registrado</option><option>Pendente</option><option>Resolvido</option><option>Transferido ao sistema oficial</option></select></div><div class="field full"><label>Resolução / Tratativa</label><textarea name="resolucao" rows="5"></textarea></div>
 </div></details><dialog class="ticket-attachments ticket-attachment-dialog" id="ticketAttachmentDialog" aria-labelledby="ticketAttachmentHeading"><div class="row between ticket-attachment-dialog-head"><strong id="ticketAttachmentHeading">Anexos do chamado</strong><button type="button" id="ticketAttachmentClose" aria-label="Fechar anexos" title="Fechar">✕</button></div><div class="field"><label for="ticketAttachmentInput">Anexos (imagens, PDFs e documentos)</label><input type="file" id="ticketAttachmentInput" multiple accept="image/png,image/jpeg,image/gif,image/webp,application/pdf,text/plain,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.zip,.7z,.txt,.log"><span class="hint">Até 8 MB por arquivo e 25 MB por chamado. Os anexos ficam somente neste navegador e não entram no TXT/backup JSON. Não inclua dados sigilosos sem autorização.</span></div><div id="ticketAttachmentList" aria-live="polite"></div><p id="ticketAttachmentSaveStatus" class="hint" aria-live="polite"></p><div class="row ticket-attachment-footer"><button type="button" class="primary" id="ticketAttachmentSave">Salvar anexos</button><button type="button" id="ticketAttachmentCancel">Fechar</button></div></dialog><div class="row" style="margin-top:16px"><button type="submit" class="primary" id="saveBtn">Salvar atendimento</button><button type="button" id="clearBtn">Limpar formulário</button><span class="hint" id="saveInfo"></span></div></form></div></section>
-<section id="view-list" class="hide"><div class="panel"><div class="row between"><h2>Atendimentos registrados</h2><span class="hint" id="count"></span></div><div class="row"><input style="max-width:360px" id="search" placeholder="Pesquisar nome, protocolo ou problema"><input id="dateFilter" type="date" style="max-width:180px"><button id="showAll">Todas as datas</button></div><div class="row txt-export-actions"><button type="button" class="primary" id="txtExportAll">↓ TXT de todos</button><button type="button" id="txtExportSelected">↓ TXT selecionados</button><button type="button" id="txtPreview">Visualizar texto ampliado</button><button type="button" id="txtSelectVisible">Selecionar resultados</button><button type="button" id="txtClearSelection">Limpar seleção</button><span id="txtSelectedCount" class="hint" aria-live="polite">0 selecionados</span></div><div class="tablewrap" style="margin-top:15px"><table><thead><tr><th><input type="checkbox" id="txtToggleVisible" aria-label="Selecionar todos os atendimentos exibidos" title="Selecionar todos os atendimentos exibidos"></th><th>Data/hora</th><th>Chamado</th><th>Nome</th><th>Problema</th><th>Status</th><th>Ações</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
+<section id="view-list" class="hide"><div class="panel"><div class="row between"><h2>Atendimentos registrados</h2><span class="hint" id="count"></span></div><div class="row"><input style="max-width:360px" id="search" placeholder="Pesquisar nome, protocolo ou problema"><input id="dateFilter" type="date" style="max-width:180px"><button id="showAll">Todas as datas</button></div><div class="row txt-export-actions"><button type="button" class="primary" id="txtExportAll">↓ TXT de todos</button><button type="button" id="txtExportSelected">↓ TXT selecionados</button><button type="button" id="zipExportSelected">↓ ZIP com anexos</button><button type="button" id="txtPreview">Visualizar texto ampliado</button><button type="button" id="txtSelectVisible">Selecionar resultados</button><button type="button" id="txtClearSelection">Limpar seleção</button><span id="txtSelectedCount" class="hint" aria-live="polite">0 selecionados</span></div><div class="tablewrap" style="margin-top:15px"><table><thead><tr><th><input type="checkbox" id="txtToggleVisible" aria-label="Selecionar todos os atendimentos exibidos" title="Selecionar todos os atendimentos exibidos"></th><th>Data/hora</th><th>Chamado</th><th>Nome</th><th>Problema</th><th>Status</th><th>Ações</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
 <dialog id="txtPreviewDialog" class="txt-preview-dialog" aria-label="Prévia de atendimentos em texto">
  <div class="row between"><strong>Prévia para copiar e colar</strong><button type="button" id="txtClosePreview" aria-label="Fechar prévia">✕</button></div>
  <p class="hint">Confira o total de atendimentos, selecione os trechos desejados e copie. O arquivo .txt não define o tamanho da fonte do Bloco de Notas.</p>
@@ -444,7 +444,7 @@ function ticketPasteText(t,index){
  lines.push('',label('Resumo',t.problema,true),label('Descrição',t.descricao,true),'',label('Resolução / tratativa',t.resolucao,true));
  return lines.join('\n');
 }
-function ticketsTxtContent(items){
+function ticketsTxtContent(items,extraAttachments){
  if(!items.length)return '';
  const dates=items.map(t=>localDay(new Date(t.created))).filter(Boolean).sort();
  const first=dates[0]?.split('-').reverse().join('/')||'—';
@@ -464,7 +464,7 @@ function ticketsTxtContent(items){
   '',
   '- [ ] ATENDIMENTO '+String(i+1).padStart(2,'0')+' DE '+String(items.length).padStart(2,'0'),
   'Data / hora: '+(t.created?new Date(t.created).toLocaleString('pt-BR'):'Não informada'),
-  ticketPasteText(t,i+1),
+  ticketPasteText(t,i+1)+(extraAttachments?.get(t.id)||''),
   '',
   divider
  ].join('\n'));
@@ -503,6 +503,18 @@ $('#txtCopyPreview').onclick=async()=>{
 };
 $('#txtExportAll').onclick=()=>exportTicketsTxt([...data.tickets].sort((a,b)=>a.created.localeCompare(b.created)),txtFileName('todos'));
 $('#txtExportSelected').onclick=()=>exportTicketsTxt(data.tickets.filter(t=>selectedTxtTicketIds.has(t.id)).sort((a,b)=>a.created.localeCompare(b.created)),txtFileName('selecionados'));
+$('#zipExportSelected').onclick=async()=>{
+ const button=$('#zipExportSelected');
+ const marked=data.tickets.filter(t=>selectedTxtTicketIds.has(t.id));
+ const items=(marked.length?marked:data.tickets).slice().sort((a,b)=>a.created.localeCompare(b.created));
+ if(!items.length){alert('Não há atendimentos para exportar.');return}
+ if(!marked.length&&!confirm('Nenhum atendimento selecionado. Exportar todos os '+items.length+' atendimentos com anexos?'))return;
+ button.disabled=true;button.textContent='Preparando ZIP...';
+ try{await window.tjesExportZip(items,ticketsTxtContent)}
+ catch(e){console.error('Falha ao exportar anexos',e);alert('Não foi possível gerar o ZIP: '+(e?.message||'erro desconhecido'))}
+ finally{button.disabled=false;button.textContent='↓ ZIP com anexos'}
+};
+
 $('#txtSelectVisible').onclick=()=>{document.querySelectorAll('#rows .txt-ticket-check').forEach(cb=>{cb.checked=true;selectedTxtTicketIds.add(cb.dataset.id)});updateTxtSelected()};
 $('#txtClearSelection').onclick=()=>{selectedTxtTicketIds.clear();document.querySelectorAll('#rows .txt-ticket-check').forEach(cb=>cb.checked=false);updateTxtSelected()};
 $('#txtToggleVisible').onchange=e=>{document.querySelectorAll('#rows .txt-ticket-check').forEach(cb=>{cb.checked=e.target.checked;if(cb.checked)selectedTxtTicketIds.add(cb.dataset.id);else selectedTxtTicketIds.delete(cb.dataset.id)});updateTxtSelected()};
@@ -1002,4 +1014,4 @@ $('#importConfirm').onclick=()=>{
  }catch{alert('Não foi possível importar. Confira a integridade do arquivo e o espaço do navegador.')}
 };
 initialize();
-</script><script src="./ticket-attachments.js?v=20261030-save1"></script></body></html>
+</script><script src="./ticket-attachments.js?v=20261030-export1"></script><script src="./ticket-export-zip.js?v=20261030-export1"></script></body></html>
