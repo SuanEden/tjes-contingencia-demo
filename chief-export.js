@@ -3,12 +3,12 @@
 const $=s=>document.querySelector(s);
 const box=$('#view-backup .transfer-panel');if(!box)return;
 const panel=document.createElement('section');panel.className='chief-export-panel';
-panel.innerHTML='<h3>Exportar para a chefia</h3><p class="hint">Exporta os chamados criados hoje em XML compatível com o relatório da chefia e abre uma mensagem preparada no Teams. Anexe o arquivo XML e confirme o envio manualmente.</p><div class="chief-export-fields"><label>Identificação do atendente <input type="text" id="chiefOperator" maxlength="120" placeholder="Seu nome"></label><label>Destinatário no Teams (e-mail corporativo) <input type="email" id="chiefRecipient" maxlength="200" placeholder="chefia@dominio.com"></label></div><div class="row" style="margin-top:10px"><button type="button" class="primary" id="chiefExport">↓ Exportar XML e abrir Teams</button><span class="hint" id="chiefStatus" aria-live="polite"></span></div><p class="hint">Anexos não estão incluídos no XML. Este arquivo contém informações pessoais: use somente um destinatário autorizado. Nenhuma mensagem é enviada automaticamente.</p>';
+panel.innerHTML='<h3>Exportar para a chefia</h3><p class="hint">Exporta os chamados criados hoje em XML compatível com o relatório da chefia e abre uma mensagem preparada no Teams. Anexe o arquivo XML e confirme o envio manualmente.</p><div class="chief-export-fields"><label>Identificação do atendente <input type="text" id="chiefOperator" maxlength="120" placeholder="Seu nome"></label><label>Destinatária fixa no Teams <input type="email" id="chiefRecipient" value="thais.brito@lanlink.com.br" readonly aria-readonly="true"></label></div><div class="row" style="margin-top:10px"><button type="button" class="primary" id="chiefExport">↓ Exportar XML e abrir Teams</button><span class="hint" id="chiefStatus" aria-live="polite"></span></div><p class="hint">Anexos não estão incluídos no XML. Este arquivo contém informações pessoais: use somente um destinatário autorizado. Nenhuma mensagem é enviada automaticamente.</p>';
 const transferGrid=box.querySelector('.transfer-grid');
 if(transferGrid)transferGrid.insertAdjacentElement('afterend',panel);else box.append(panel);
-const OP_KEY='tjes_chief_operator_v1',TO_KEY='tjes_chief_recipient_v1';
+const OP_KEY='tjes_chief_operator_v1',CHIEF_RECIPIENT='thais.brito@lanlink.com.br';
 $('#chiefOperator').value=localStorage.getItem(OP_KEY)||'';
-$('#chiefRecipient').value=localStorage.getItem(TO_KEY)||'';
+$('#chiefRecipient').value=CHIEF_RECIPIENT;
 const columns=['Referência','Data/hora de registro','Relógio de ANS parou','Última Ação por Nome','Inativo?','Resolução até','Nome do produto','Item','Categoria','Confirmação de DPS necessária','Salas do edifício','Nome afetado','Telefone de contato','Ramal de contato','Resumo','Descrição','Status do atendimento','ID local'];
 const esc=s=>String(s??'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const fmtDate=value=>{const d=new Date(value);if(Number.isNaN(d.getTime()))return '';return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getFullYear()).slice(-2)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
@@ -30,7 +30,7 @@ function download(name,txt){
  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 $('#chiefExport').addEventListener('click',()=>{
- const operator=$('#chiefOperator').value.trim(),recipient=$('#chiefRecipient').value.trim();
+ const operator=$('#chiefOperator').value.trim(),recipient=CHIEF_RECIPIENT;
  const tickets=onlyToday();
  if(!operator){$('#chiefStatus').textContent='Informe o nome do atendente.';$('#chiefOperator').focus();return}
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)){$('#chiefStatus').textContent='Informe o e-mail corporativo da chefia.';$('#chiefRecipient').focus();return}
@@ -39,7 +39,7 @@ $('#chiefExport').addEventListener('click',()=>{
  const msg='Olá! Segue o relatório TJES de '+new Date().toLocaleDateString('pt-BR')+', enviado por '+operator+'. Total: '+tickets.length+' chamado(s). Arquivo: '+file+'.';
  const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg);
  try{
-  localStorage.setItem(OP_KEY,operator);localStorage.setItem(TO_KEY,recipient);
+  localStorage.setItem(OP_KEY,operator);
   const chat=window.open(teams,'_blank','noopener,noreferrer');
   download(file,xmlFor(tickets,operator));
   $('#chiefStatus').textContent=tickets.length+' chamado(s) exportado(s). No Teams, anexe '+file+' e clique em Enviar.'+(chat?'':' Se necessário, habilite a abertura do Teams.');
