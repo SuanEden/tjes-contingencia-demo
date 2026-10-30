@@ -690,7 +690,7 @@ function kbCandidates(){
   return score;
  };
  if(query){
-  const found=index.map(item=>({item,score:(item.normTitle.includes(query)?90:0)+(item.normSummary.includes(query)?70:0)+(item.normTags.includes(query)?45:0)+(item.normText.includes(query)?10:0)+rank(item)})).filter(x=>x.score>0);
+  const found=index.map(item=>{const direct=(item.normTitle.includes(query)?90:0)+(item.normSummary.includes(query)?70:0)+(item.normTags.includes(query)?45:0)+(item.normText.includes(query)?10:0);return {item,score:direct?direct+rank(item):0}}).filter(x=>x.score>0);
   found.sort((a,b)=>b.score-a.score||a.item.index-b.item.index);
   return {label:'Resultados da pesquisa',items:found.slice(0,12).map(({item,score})=>({...item,hits:score}))};
  }
