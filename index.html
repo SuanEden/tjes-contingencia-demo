@@ -255,10 +255,6 @@ html[data-theme="dark"] .ticket-attachment-dialog{background:#1d2d40;color:#f0f5
 /* Pesquisa unificada: lista única com rolagem e ações explícitas. */
 #kbSideImportedResults{display:none!important}
 #kbResults{max-height:70vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
-#kbResults .kb-knowledge-entry{cursor:default;min-width:0}
-#kbResults .kb-knowledge-entry strong{overflow-wrap:anywhere}
-#kbResults .kb-entry-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
-#kbResults .kb-entry-actions button{font-size:11px;padding:6px 7px;min-height:30px}
 
 /* Evoluções no painel e na lista; sem modificar o formulário de novo atendimento. */
 .tjes-extra-filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:12px 0;padding:12px;border:1px solid var(--line,#b5cadb);border-radius:9px}
@@ -860,14 +856,12 @@ function kbRender(){
  $('#kbResultsLabel').textContent=label;
  const fragment=document.createDocumentFragment();
  for(const item of items){
-  const b=document.createElement('div');b.className='kb-option kb-knowledge-entry';
+  const b=document.createElement('button');b.className='kb-option';b.type='button';
   const strong=document.createElement('strong');strong.textContent=item.title;
-  const actions=document.createElement('div');actions.className='kb-entry-actions';
-  const preview=document.createElement('button');preview.type='button';preview.textContent='Visualizar';preview.onclick=()=>{kbSelected=item;kbPreview()};
-  const use=document.createElement('button');use.type='button';use.textContent='Aplicar descrição';use.onclick=()=>{kbSelected=item;kbApply('descricao')};
-  actions.append(preview,use);
-  if(KB_RESOLUTIONS[item.title]){const solve=document.createElement('button');solve.type='button';solve.textContent='Aplicar orientação';solve.title='Revise a orientação antes de registrar procedimentos executados';solve.onclick=()=>{kbSelected=item;kbApply('resolucao')};actions.append(solve)}
-  b.append(strong,actions);fragment.append(b);
+  const sub=document.createElement('small');sub.textContent=item.hits?'Correspondência com a pesquisa ou resumo':'Modelo disponível';
+  b.append(strong,sub);
+  b.onclick=()=>{kbSelected=item;kbPreview();show('form');kbApply('descricao');kbRender()};
+  fragment.append(b);
  }
  if(!items.length){const p=document.createElement('p');p.textContent='Nenhum conhecimento encontrado.';fragment.append(p)}
  area.append(fragment);
