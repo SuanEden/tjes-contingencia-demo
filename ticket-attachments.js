@@ -86,6 +86,6 @@ async function removeTicket(id){await transact('readwrite',store=>{
  const req=store.index('ticketId').openCursor(IDBKeyRange.only(id));
  req.onsuccess=()=>{const cursor=req.result;if(cursor){cursor.delete();cursor.continue()}};
 })}
-window.ticketAttachments={reset,load,save,removeTicket};
+window.ticketAttachments={reset,load,save,removeTicket,getTicketFiles};
 display();
 })();
