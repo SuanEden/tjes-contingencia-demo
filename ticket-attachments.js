@@ -18,10 +18,15 @@ function getTicketFiles(id){if(!id)return Promise.resolve([]);return transact('r
  const idx=store.index('ticketId');const req=idx.getAll(id);req.onsuccess=()=>done(req.result||[]);
 })}
 function readable(size){return size<1024?size+' B':size<1048576?(size/1024).toFixed(1)+' KB':(size/1048576).toFixed(1)+' MB'}
+const toggle=document.getElementById('ticketAttachmentToggle'),panel=document.getElementById('ticketAttachmentPanel'),counter=document.getElementById('ticketAttachmentCount');
+function setOpen(open){if(!toggle||!panel)return;panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Fechar anexos do chamado':'Abrir anexos do chamado');toggle.title=open?'Fechar anexos':'Anexos do chamado'}
+if(toggle)toggle.addEventListener('click',()=>setOpen(panel.hidden));
+function updateCount(count){if(!counter)return;counter.hidden=count===0;counter.textContent=String(count);toggle?.setAttribute('title',count?count+' anexo(s) · clique para abrir':'Anexos do chamado')}
 function resetUrls(){for(const url of urls)URL.revokeObjectURL(url);urls=[]}
 function display(){
  resetUrls();list.replaceChildren();
  const rows=[...saved.filter(f=>!removed.has(f.id)),...pending.map(f=>({id:f.id,name:f.file.name,size:f.file.size,type:f.file.type,blob:f.file,temporary:true}))];
+ updateCount(rows.length);
  for(const item of rows){
   const row=document.createElement('div');row.className='ticket-attachment-row';
   const name=document.createElement('small');name.textContent=item.name+' ('+readable(item.size)+')';row.append(name);
@@ -39,8 +44,8 @@ function display(){
  }
  if(!rows.length){const hint=document.createElement('p');hint.className='hint';hint.textContent='Nenhum arquivo anexado.';list.append(hint)}
 }
-function reset(){generation++;currentId=null;pending=[];removed.clear();saved=[];input.value='';display()}
-async function load(id){const n=++generation;currentId=id;pending=[];removed.clear();saved=[];input.value='';display();try{const rows=await getTicketFiles(id);if(n!==generation)return;saved=rows;display()}catch(e){if(n===generation)alert('Não foi possível carregar os anexos: '+e.message)}}
+function reset(){setOpen(false);generation++;currentId=null;pending=[];removed.clear();saved=[];input.value='';display()}
+async function load(id){setOpen(false);const n=++generation;currentId=id;pending=[];removed.clear();saved=[];input.value='';display();try{const rows=await getTicketFiles(id);if(n!==generation)return;saved=rows;display()}catch(e){if(n===generation)alert('Não foi possível carregar os anexos: '+e.message)}}
 input.addEventListener('change',()=>{
  for(const file of Array.from(input.files||[])){
   if(file.size>MAX_FILE){alert(file.name+': limite de 8 MB por arquivo.');continue}
@@ -49,7 +54,7 @@ input.addEventListener('change',()=>{
   if(all.reduce((sum,f)=>sum+Number(f.size||0),0)+file.size>MAX_TOTAL){alert('Limite de 25 MB por chamado.');break}
   pending.push({id:crypto.randomUUID(),file});
  }
- input.value='';display()
+ input.value='';if(pending.length)setOpen(true);display()
 });
 async function save(id){
  if(!pending.length&&!removed.size)return;
