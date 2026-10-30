@@ -29,30 +29,30 @@ function download(name,txt){
  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 $('#chiefExport').addEventListener('click',async()=>{
- const operator='Equipe TJES',recipient=CHIEF_RECIPIENT;
- const tickets=onlyToday();
+ const recipient=CHIEF_RECIPIENT,tickets=onlyToday();
  if(!tickets.length){$('#chiefStatus').textContent='Nenhum atendimento criado hoje neste navegador.';return}
  const date=localDay(new Date()),fileName='TJES_chefia_'+date+'.xml';
  const msg='Olá! Segue o relatório TJES de '+new Date().toLocaleDateString('pt-BR')+', enviado pela equipe TJES. Total: '+tickets.length+' chamado(s).';
- const blob=new Blob([xmlFor(tickets,operator)],{type:'application/xml;charset=utf-8'});
+ const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg+' Arquivo: '+fileName+'.');
+ // Abrir a aba no gesto original do clique, antes de qualquer await, para evitar bloqueio de pop-up.
+ const chat=window.open('about:blank','_blank');
+ const blob=new Blob([xmlFor(tickets,'Equipe TJES')],{type:'application/xml;charset=utf-8'});
  const file=new File([blob],fileName,{type:'application/xml'});
  try{
   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
    await navigator.share({title:'Relatório diário TJES',text:msg,files:[file]});
-   $('#chiefStatus').textContent='Compartilhamento aberto. Selecione Microsoft Teams e confirme o destinatário antes de enviar.';
+   if(chat)chat.close();
+   $('#chiefStatus').textContent='Selecione Microsoft Teams no compartilhamento, confira o destinatário e confirme o envio.';
    return;
   }
   download(fileName,await blob.text());
-  const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg+' Arquivo: '+fileName+'.');
-  const chat=window.open(teams,'_blank','noopener,noreferrer');
-  $('#chiefStatus').textContent='XML baixado. '+(chat?'Teams aberto.':'Abra o Teams manualmente.')+' Anexe '+fileName+' e confirme o envio.';
+  if(chat)chat.location.href=teams;
+  $('#chiefStatus').textContent='XML baixado. '+(chat?'Conversa do Teams aberta.':'O navegador bloqueou a nova janela;')+' Anexe '+fileName+' e confirme o envio.';
  }catch(e){
-  if(e?.name==='AbortError'){$('#chiefStatus').textContent='Compartilhamento cancelado. Nenhum envio foi realizado.';return}
-  // Se o navegador negar navigator.share (Permission denied), usar o fluxo compatível com desktop.
+  if(e?.name==='AbortError'){if(chat)chat.close();$('#chiefStatus').textContent='Compartilhamento cancelado. Nenhum envio foi realizado.';return}
   download(fileName,await blob.text());
-  const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg+' Arquivo: '+fileName+'.');
-  const chat=window.open(teams,'_blank','noopener,noreferrer');
-  $('#chiefStatus').textContent='O compartilhamento do dispositivo foi bloqueado. XML baixado; '+(chat?'Teams aberto.':'abra o Teams manualmente.')+' Anexe '+fileName+' e confirme o envio.';
+  if(chat)chat.location.href=teams;
+  $('#chiefStatus').textContent='Compartilhamento do dispositivo indisponível. XML baixado. '+(chat?'Conversa do Teams aberta.':'Pop-up bloqueado: permita pop-ups para este site ou abra o Teams manualmente.')+' Anexe '+fileName+' e confirme o envio.';
  }
 });
 window.tjesChiefXML={xmlFor,onlyToday,columns};
