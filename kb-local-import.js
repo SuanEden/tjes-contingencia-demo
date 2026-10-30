@@ -1,26 +1,51 @@
 (function(){
 'use strict';
-const DB='tjes_kb_importada_v1', STORE='artigos';
-function dbOpen(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(STORE))req.result.createObjectStore(STORE,{keyPath:'key'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
-async function transaction(mode,task){const db=await dbOpen();try{return await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,mode), st=tx.objectStore(STORE);let result;try{result=task(st)}catch(e){reject(e);return}tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);});}finally{db.close();}}
-async function readAll(){const db=await dbOpen();try{return await new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readonly').objectStore(STORE).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}finally{db.close();}}
-function safe(s){return String(s||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
-const parent=document.querySelector('#view-scripts .panel');if(!parent)return;
-const wrap=document.createElement('section');wrap.id='kbImportedLibrary';wrap.style.cssText='border:1px solid #bdcbd8;border-radius:8px;padding:15px;margin:16px 0;background:var(--surface,#fff)';
-wrap.innerHTML='<h3>📚 Biblioteca TJES importada (somente neste navegador)</h3><p class="hint">Importe o arquivo JSON de índice gerado localmente. Nenhum documento é enviado ao GitHub ou servidor. Textos permanecem no armazenamento local deste navegador.</p><div class="row"><input type="file" id="kbLocalFile" accept=".json,application/json" aria-label="Selecionar índice local JSON"><button type="button" id="kbLocalClear" title="Excluir apenas o índice importado">Remover índice local</button></div><p id="kbLocalStatus" class="hint" role="status"></p><input id="kbLocalQuery" placeholder="Pesquisar código, título e texto dos procedimentos" aria-label="Pesquisar documentos importados"><div id="kbLocalResults"></div>';
-parent.insertBefore(wrap,document.getElementById('knowledgeEditor'));
-const input=wrap.querySelector('#kbLocalFile'),query=wrap.querySelector('#kbLocalQuery'),status=wrap.querySelector('#kbLocalStatus'),results=wrap.querySelector('#kbLocalResults');
-let all=[];
-function render(){const q=query.value.trim().toLocaleLowerCase('pt-BR');results.replaceChildren();if(!all.length){results.textContent='Nenhum índice importado.';return;}if(q.length<2){results.textContent='Digite pelo menos 2 caracteres para pesquisar ('+all.length+' documentos disponíveis).';return;}const hits=all.filter(x=>(x.key+' '+x.title+' '+x.category+' '+x.group+' '+x.text).toLocaleLowerCase('pt-BR').includes(q)).slice(0,60);
-if(!hits.length){results.textContent='Nenhum resultado.';return;}
-const count=document.createElement('p');count.className='hint';count.textContent='Mostrando '+hits.length+' resultado(s), limite de 60.';results.append(count);
-for(const x of hits){const item=document.createElement('details');item.style.cssText='border:1px solid #d8e1ea;padding:9px;border-radius:5px;margin:6px 0';
-const summary=document.createElement('summary');summary.textContent=x.key+' — '+x.title;summary.style.cursor='pointer';item.append(summary);
-const meta=document.createElement('p');meta.className='hint';meta.textContent=[x.category,x.group,x.pages+' página(s)'].filter(Boolean).join(' • ');item.append(meta);
-const pre=document.createElement('pre');pre.style.cssText='white-space:pre-wrap;max-height:340px;overflow:auto;font-family:inherit;font-size:13px';pre.textContent=x.text||'(PDF sem texto pesquisável)';item.append(pre);
-const copy=document.createElement('button');copy.type='button';copy.textContent='Copiar texto do procedimento';copy.onclick=async()=>{try{await navigator.clipboard.writeText(x.text||'');copy.textContent='Copiado';}catch{copy.textContent='Não foi possível copiar';}};item.append(copy);results.append(item);}}
-query.addEventListener('input',render);
-input.addEventListener('change',async()=>{const file=input.files&&input.files[0];if(!file)return;status.textContent='Lendo índice local...';try{if(file.size>40*1024*1024)throw Error('O índice excede 40 MB.');const payload=JSON.parse(await file.text());if(!payload||payload.version!==1||!Array.isArray(payload.records))throw Error('Formato de índice inválido.');if(payload.records.length>10000)throw Error('Quantidade de documentos acima do limite.');const rows=payload.records.map((r,i)=>({key:String(r.id||'item-'+i)+'|'+String(r.path||i),title:String(r.title||'Documento').slice(0,180),category:String(r.category||''),group:String(r.group||''),pages:Number(r.pages||0),text:String(r.text||'').slice(0,45000)}));const db=await dbOpen();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');const st=tx.objectStore(STORE);st.clear();for(const r of rows)st.put(r);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();all=rows;status.textContent=rows.length+' documentos importados para este navegador.';render();}catch(e){status.textContent='Falha na importação: '+e.message;}});
-wrap.querySelector('#kbLocalClear').addEventListener('click',async()=>{if(!confirm('Remover apenas os documentos importados neste navegador?'))return;await transaction('readwrite',st=>st.clear());all=[];status.textContent='Índice local removido.';render();});
-readAll().then(rows=>{all=rows;status.textContent=rows.length+' documentos disponíveis no navegador.';render();}).catch(()=>{status.textContent='Não foi possível abrir o armazenamento local.';});
+// Consulta local da biblioteca documental. Não há importação nem envio de arquivos.
+const DB='tjes_kb_importada_v1',STORE='artigos';
+const panel=document.querySelector('#view-scripts .panel'),search=document.querySelector('#scriptSearch'),scriptArea=document.querySelector('#scriptArea');
+if(!panel||!search||!scriptArea)return;
+const wrap=document.createElement('section');wrap.id='kbImportedLibrary';
+wrap.className='knowledge-document-library';
+wrap.innerHTML='<h3>Artigos da biblioteca</h3><p class="hint" id="kbLocalStatus" aria-live="polite">Consultando documentos disponíveis...</p><div id="kbLocalResults"></div>';
+scriptArea.before(wrap);
+const status=wrap.querySelector('#kbLocalStatus'),results=wrap.querySelector('#kbLocalResults');
+const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+let articles=[],error=false;
+function readAll(){return new Promise((resolve,reject)=>{
+ const opening=indexedDB.open(DB,1);
+ opening.onupgradeneeded=()=>{if(!opening.result.objectStoreNames.contains(STORE))opening.result.createObjectStore(STORE,{keyPath:'key'})};
+ opening.onerror=()=>reject(opening.error);
+ opening.onsuccess=()=>{const db=opening.result;const tx=db.transaction(STORE,'readonly');
+ const request=tx.objectStore(STORE).getAll();request.onsuccess=()=>resolve(request.result||[]);request.onerror=()=>reject(request.error);tx.oncomplete=()=>db.close();};
+});}
+function render(){
+ results.replaceChildren();
+ const q=normalize(search.value.trim());
+ if(error){status.textContent='Não foi possível consultar os artigos armazenados neste navegador.';return}
+ if(!articles.length){status.textContent='Nenhum artigo documental disponível neste navegador. Os modelos da Base de Conhecimento continuam acessíveis abaixo.';return}
+ if(q.length<2){status.textContent=articles.length+' artigos documentais disponíveis neste navegador. Pesquise pelo título, código ou assunto para consultar.';return}
+ const matches=articles.map(r=>{
+  const title=normalize(String(r.key||'')+' '+String(r.title||''));
+  const group=normalize(String(r.category||'')+' '+String(r.group||''));
+  const body=normalize(r.text);
+  const score=(title.includes(q)?4:0)+(group.includes(q)?2:0)+(body.includes(q)?1:0);
+  return {r,score}
+ }).filter(x=>x.score).sort((a,b)=>b.score-a.score).slice(0,40);
+ status.textContent=matches.length+' artigo(s) encontrados na biblioteca local (máximo 40 por pesquisa).';
+ for(const {r} of matches){
+  const card=document.createElement('div');card.className='script';
+  const top=document.createElement('div');top.className='row between';
+  const title=document.createElement('strong');title.textContent=(String(r.key||'').split('|')[0]||'Artigo')+' — '+String(r.title||'Documento');
+  const copy=document.createElement('button');copy.type='button';copy.textContent='Copiar texto';
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(String(r.text||''));copy.textContent='Copiado'}catch{copy.textContent='Não foi possível copiar'}};
+  top.append(title,copy);card.append(top);
+  const metadata=document.createElement('p');metadata.className='knowledge-summary';metadata.textContent=[r.category,r.group,r.pages?r.pages+' página(s)':''].filter(Boolean).join(' • ');
+  card.append(metadata);
+  const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Consultar conteúdo do artigo';
+  const body=document.createElement('pre');body.textContent=String(r.text||'Documento sem texto pesquisável').slice(0,45000);
+  details.append(summary,body);card.append(details);results.append(card);
+ }
+}
+search.addEventListener('input',render);
+readAll().then(rows=>{articles=rows;render()}).catch(()=>{error=true;render()});
 })();
