@@ -36,6 +36,7 @@ function display(){
   const blob=item.blob;
   if(blob){
    const url=URL.createObjectURL(blob);urls.push(url);
+   if(/^image\/(jpeg|png|gif|webp)$/.test(item.type)){const thumb=document.createElement('img');thumb.src=url;thumb.alt='Miniatura de '+item.name;thumb.className='tjes-attachment-thumb';thumb.loading='lazy';row.prepend(thumb)}
    const link=document.createElement('a');link.href=url;link.download=item.name;link.textContent='Baixar';link.className='button';actions.append(link);
    if(/^image\/(jpeg|png|gif|webp)$/.test(item.type)||item.type==='application/pdf'){
     const see=document.createElement('button');see.type='button';see.textContent='Visualizar';see.onclick=()=>window.open(url,'_blank','noopener,noreferrer');actions.append(see);
@@ -52,6 +53,8 @@ input.addEventListener('change',()=>{
  for(const file of Array.from(input.files||[])){
   if(file.size>MAX_FILE){alert(file.name+': limite de 8 MB por arquivo.');continue}
   if(/\.(exe|bat|cmd|ps1|js|html?|svg|msi|scr)$/i.test(file.name)){alert(file.name+': tipo de arquivo não permitido.');continue}
+  const existing=[...saved.filter(f=>!removed.has(f.id)),...pending.map(f=>({name:f.file.name,size:f.file.size}))];
+  if(existing.some(f=>f.name===file.name&&f.size===file.size)){statusMessage('Arquivo duplicado ignorado: '+file.name);continue}
   const all=[...saved.filter(f=>!removed.has(f.id)),...pending.map(f=>({size:f.file.size}))];
   if(all.reduce((sum,f)=>sum+Number(f.size||0),0)+file.size>MAX_TOTAL){alert('Limite de 25 MB por chamado.');break}
   pending.push({id:crypto.randomUUID(),file});
@@ -67,7 +70,7 @@ async function save(id){
   for(const {id:fileId,file} of toAdd)store.put({id:fileId,ticketId:id,name:file.name,size:file.size,type:file.type||'application/octet-stream',blob:file,created:new Date().toISOString()});
  });
  pending=[];removed.clear();
- saved=await getTicketFiles(id);currentId=id;display()
+ saved=await getTicketFiles(id);currentId=id;display();window.tjesEnhance?.refreshAttachmentCounts()
 }
 if(saveButton)saveButton.addEventListener('click',async()=>{
  if(saveButton.disabled)return;
