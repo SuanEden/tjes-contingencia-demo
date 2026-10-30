@@ -250,6 +250,7 @@ html[data-theme="dark"] .ticket-attachment-dialog{background:#1d2d40;color:#f0f5
 #kbSideImportedItems .kb-side-article pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;font-size:11px;line-height:1.5}
 #kbSideImportedItems .kb-side-article button{font-size:12px;padding:6px 8px}
 @media(max-width:1050px){#kbSideImportedItems{max-height:55vh}}
+#kbResults{max-height:70vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-right:5px;scrollbar-width:thin}
 </style></head><body>
 <div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Importar e exportar</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Armazenamento local sem autenticação ou criptografia — uso sujeito à autorização da TI</span></div><div class="row"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Ativar tema escuro" aria-pressed="false">☾ Tema escuro</button><span class="status">● Offline</span></div></header><div class="content">
 <section id="view-dashboard"><div class="row between dashheading"><div><span class="dash-eyebrow">VISÃO OPERACIONAL</span><h2>Atendimentos do dia</h2><span class="hint">Acompanhamento local de chamados • Sem integração com o Assyst</span></div><div class="row"><input type="date" id="dashboardDate" aria-label="Data dos atendimentos" style="width:170px"><button class="primary" id="dashboardNew">+ Novo atendimento</button><button id="dailyCopy">Copiar relatório do dia</button><button type="button" id="dashboardEditToggle" class="dashboard-edit-toggle" aria-label="Editar organização dos painéis" aria-pressed="false" title="Editar organização dos painéis">✎</button></div></div><div class="dash-overview" aria-label="Resumo de atendimentos do dia"><div class="dash-stat"><span class="dash-stat-label">Atendimentos pendentes</span><strong id="statPending">0</strong><span class="dash-stat-foot">Chamados aguardando atendimento</span></div><div class="dash-stat"><span class="dash-stat-label">Registrados no sistema</span><strong id="statTransferred">0</strong><span class="dash-stat-foot">Chamados encaminhados ao sistema oficial</span></div></div><div class="row dash-panel-toolbar"><div id="dashPanelTools" class="dash-panel-tools" hidden><button type="button" id="addPanel">+ Criar painel</button><button type="button" id="resetPanels">Restaurar painéis padrão</button><span class="hint">Arraste o título para reorganizar. Use × para remover um painel.</span></div></div><div class="dashgrid"><article class="dashcard" data-panel="All"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">ATENDIMENTOS REGISTRADOS <span id="dashAllCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashAll"></div></article><article class="dashcard" data-panel="Pending"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">PENDENTES <span id="dashPendingCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashPending"></div></article><article class="dashcard" data-panel="Resolved"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">RESOLVIDOS <span id="dashResolvedCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashResolved"></div></article><article class="dashcard" data-panel="Transferred"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">TRANSFERIDOS AO SISTEMA <span id="dashTransferredCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashTransferred"></div></article></div><div class="warn">Esta é uma visão dos atendimentos salvos neste navegador. Não representa filas, prioridades, atribuições nem tempos reais do Assyst. Protótipo: não insira dados pessoais reais.</div></section>
@@ -311,7 +312,7 @@ html[data-theme="dark"] .ticket-attachment-dialog{background:#1d2d40;color:#f0f5
 </div></section>
 </div></main><aside class="kb-side" id="kbSide" aria-label="Base de conhecimento"><h2>▣ Base de conhecimento • Sugestões</h2><p class="kb-small">Se houver um resumo, mostra modelos compatíveis. Sem resumo, mostra seus modelos recentes ou sugestões iniciais. O histórico é salvo apenas neste navegador.</p><input id="kbSearch" placeholder="Pesquisar: senha, PJe, pendenciamento..." aria-label="Pesquisar na base de conhecimento"><p class="kb-small" id="kbResultsLabel" aria-live="polite">Modelos sugeridos para começar</p><div id="kbResults"></div><div id="kbChosen" hidden><strong id="kbSelectedTitle"></strong><div class="kb-preview" id="kbPreview"></div><p class="kb-warn" id="kbMissing"></p><div class="kb-actions"><button class="primary" type="button" id="kbApply">Aplicar na descrição</button><button type="button" id="kbResolution">Aplicar na resolução</button><button type="button" id="kbCancel">Cancelar</button></div><p class="kb-small">Ao selecionar um modelo, o resumo e a descrição são ajustados juntos. O resumo muda automaticamente; só é solicitada confirmação quando a descrição preenchida será substituída. Nada é salvo sem clicar em Salvar atendimento.</p></div></aside></div>
 <script src="./base-de-conhecimento.js?v=20261030-sate0070"></script>
-<script defer src="./kb-local-import.js?v=20261030-sidebar-all"></script>
+<script defer src="./kb-local-import.js?v=20261030-all-models"></script>
 
 <script>
 'use strict';
@@ -811,11 +812,11 @@ function kbCandidates(){
  if(query){
   const found=index.map(item=>{const direct=(item.normTitle.includes(query)?90:0)+(item.normSummary.includes(query)?70:0)+(item.normTags.includes(query)?45:0)+(item.normText.includes(query)?10:0);return {item,score:direct?direct+rank(item):0}}).filter(x=>x.score>0);
   found.sort((a,b)=>b.score-a.score||a.item.index-b.item.index);
-  return {label:'Resultados da pesquisa',items:found.slice(0,12).map(({item,score})=>({...item,hits:score}))};
+  return {label:'Resultados da pesquisa',items:found.map(({item,score})=>({...item,hits:score}))};
  }
  if(summary){
   const found=index.map(item=>({item,score:rank(item)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.item.index-b.item.index);
-  if(found.length)return {label:'Sugestões para o resumo',items:found.slice(0,8).map(({item,score})=>({...item,hits:score}))};
+  if(found.length)return {label:'Sugestões para o resumo',items:found.map(({item,score})=>({...item,hits:score}))};
  }
  const byTitle=new Map(index.map(item=>[item.title,item]));
  const recent=kbRecents().map(title=>byTitle.get(title)).filter(Boolean);
@@ -954,7 +955,14 @@ $('#scriptSearch').oninput=renderScripts;
 function download(name,content){const blob=new Blob([content],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 const TRANSFER_KB_KEY='tjes_kb_custom_snapshot_v1';
 let pendingImport=null;
-function knowledgeSnapshot(){return {scripts:scripts.map(x=>[...x]),tags:KB_TAGS.map(x=>[x[0],Array.isArray(x[1])?[...x[1]]:[]]),resolutions:{...KB_RESOLUTIONS},summaries:{...KB_SUMMARIES},customTitles:[...customKnowledgeTitles],recent:kbRecents()}}
+function knowledgeSnapshot(){
+ const generated=window.tjesLibraryModelTitles||new Set();
+ return {scripts:scripts.filter(x=>!generated.has(x[0])).map(x=>[...x]),
+ tags:KB_TAGS.filter(x=>!generated.has(x[0])).map(x=>[x[0],Array.isArray(x[1])?[...x[1]]:[]]),
+ resolutions:Object.fromEntries(Object.entries(KB_RESOLUTIONS).filter(([title])=>!generated.has(title))),
+ summaries:Object.fromEntries(Object.entries(KB_SUMMARIES).filter(([title])=>!generated.has(title))),
+ customTitles:[...customKnowledgeTitles],recent:kbRecents()};
+}
 function applyKnowledge(snapshot){
  if(!snapshot||!Array.isArray(snapshot.scripts)||!Array.isArray(snapshot.tags)||!snapshot.resolutions||!snapshot.summaries)throw Error('Base inválida');
  if(snapshot.scripts.length>3000||snapshot.tags.length>3000||snapshot.scripts.some(x=>!Array.isArray(x)||x.length!==2||x.some(v=>typeof v!=='string'||v.length>20000)))throw Error('Base inválida');
@@ -970,6 +978,7 @@ function applyKnowledge(snapshot){
   Object.assign(KB_SUMMARIES,snapshot.summaries);
   customKnowledgeTitles=new Set(Array.isArray(snapshot.customTitles)?snapshot.customTitles.filter(t=>typeof t==='string'&&snapshot.scripts.some(x=>x[0]===t)):[]);
   if(Array.isArray(snapshot.recent))localStorage.setItem(KB_RECENTS_KEY,JSON.stringify(snapshot.recent.filter(v=>typeof v==='string').slice(0,8)));
+  window.tjesRefreshArticleModels?.();
  }catch(e){restoreKnowledgeInMemory(old);throw e}
 }
 function loadKnowledgeSnapshot(){
