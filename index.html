@@ -251,6 +251,14 @@ html[data-theme="dark"] .ticket-attachment-dialog{background:#1d2d40;color:#f0f5
 #kbSideImportedItems .kb-side-article button{font-size:12px;padding:6px 8px}
 @media(max-width:1050px){#kbSideImportedItems{max-height:55vh}}
 #kbResults{max-height:70vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-right:5px;scrollbar-width:thin}
+
+/* Pesquisa unificada: lista única com rolagem e ações explícitas. */
+#kbSideImportedResults{display:none!important}
+#kbResults{max-height:70vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+#kbResults .kb-knowledge-entry{cursor:default;min-width:0}
+#kbResults .kb-knowledge-entry strong{overflow-wrap:anywhere}
+#kbResults .kb-entry-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+#kbResults .kb-entry-actions button{font-size:11px;padding:6px 7px;min-height:30px}
 </style></head><body>
 <div class="shell" id="app" hidden><aside class="side"><div class="logo">◉ TJES • Atendimento</div><button class="nav" data-view="dashboard">▦ Painel do dia</button><button class="nav active" data-view="form">▤ Novo atendimento</button><button class="nav" data-view="list">☷ Todos os atendimentos</button><button class="nav" data-view="scripts">▣ Base de Conhecimento</button><button class="nav" data-view="backup">⇩ Importar e exportar</button></aside><main class="main"><header class="top"><div><h1>Central de Serviços • Contingência <small style="color:#1a679c;font-size:12px">v1.0</small></h1><span class="hint">Armazenamento local sem autenticação ou criptografia — uso sujeito à autorização da TI</span></div><div class="row"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Ativar tema escuro" aria-pressed="false">☾ Tema escuro</button><span class="status">● Offline</span></div></header><div class="content">
 <section id="view-dashboard"><div class="row between dashheading"><div><span class="dash-eyebrow">VISÃO OPERACIONAL</span><h2>Atendimentos do dia</h2><span class="hint">Acompanhamento local de chamados • Sem integração com o Assyst</span></div><div class="row"><input type="date" id="dashboardDate" aria-label="Data dos atendimentos" style="width:170px"><button class="primary" id="dashboardNew">+ Novo atendimento</button><button id="dailyCopy">Copiar relatório do dia</button><button type="button" id="dashboardEditToggle" class="dashboard-edit-toggle" aria-label="Editar organização dos painéis" aria-pressed="false" title="Editar organização dos painéis">✎</button></div></div><div class="dash-overview" aria-label="Resumo de atendimentos do dia"><div class="dash-stat"><span class="dash-stat-label">Atendimentos pendentes</span><strong id="statPending">0</strong><span class="dash-stat-foot">Chamados aguardando atendimento</span></div><div class="dash-stat"><span class="dash-stat-label">Registrados no sistema</span><strong id="statTransferred">0</strong><span class="dash-stat-foot">Chamados encaminhados ao sistema oficial</span></div></div><div class="row dash-panel-toolbar"><div id="dashPanelTools" class="dash-panel-tools" hidden><button type="button" id="addPanel">+ Criar painel</button><button type="button" id="resetPanels">Restaurar painéis padrão</button><span class="hint">Arraste o título para reorganizar. Use × para remover um painel.</span></div></div><div class="dashgrid"><article class="dashcard" data-panel="All"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">ATENDIMENTOS REGISTRADOS <span id="dashAllCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashAll"></div></article><article class="dashcard" data-panel="Pending"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">PENDENTES <span id="dashPendingCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashPending"></div></article><article class="dashcard" data-panel="Resolved"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">RESOLVIDOS <span id="dashResolvedCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashResolved"></div></article><article class="dashcard" data-panel="Transferred"><div class="dashcardtitle" draggable="true" tabindex="0" title="Arraste para trocar de posição">TRANSFERIDOS AO SISTEMA <span id="dashTransferredCount">0</span></div><div class="dashcolumns" aria-hidden="true"><span>CHAMADO</span><span>USUÁRIO / PROBLEMA</span><span>HORÁRIO</span></div><div class="dashbody" id="dashTransferred"></div></article></div><div class="warn">Esta é uma visão dos atendimentos salvos neste navegador. Não representa filas, prioridades, atribuições nem tempos reais do Assyst. Protótipo: não insira dados pessoais reais.</div></section>
@@ -795,46 +803,50 @@ function getKbSearchIndex(){
  return kbSearchIndex;
 }
 function kbCandidates(){
- const index=getKbSearchIndex(),query=kbNormalize($('#kbSearch').value);
- const summary=kbNormalize($('#ticketForm').elements.namedItem('problema').value);
- const terms=summary.split(/\s+/).filter(t=>t.length>=3);
- const rank=item=>{
-  let score=0;
-  if(summary){
-   if(item.normSummary===summary)score+=120;
-   else if(item.normSummary.includes(summary))score+=75;
-   if(item.normTitle.includes(summary))score+=65;
-   for(const tag of item.tags)if(tag.length>2&&summary.includes(tag))score+=25;
-   for(const term of terms)if(item.normTitle.includes(term)||item.normSummary.includes(term))score+=4;
+ const query=kbNormalize($('#kbSearch').value||$('#ticketForm').elements.namedItem('problema').value);
+ const index=getKbSearchIndex();
+ const terms=[...new Set(query.split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!['para','com','uma','das','dos','que','por','sem','erro','usuario','sistema'].includes(x)))];
+ const synonymSets=[['senha','reset','redefinir','recuperar'],['autenticacao','login','entrar','acesso'],['pje','processo','judicial'],['impressora','impressao','imprimir'],['certificado','token','assinatura'],['lento','lentidao','travando'],['rede','internet','conexao']];
+ const expanded=new Set(terms);for(const group of synonymSets)if(group.some(x=>expanded.has(x)))for(const x of group)expanded.add(x);
+ if(!query||query.length<3){
+  const byTitle=new Map(index.map(item=>[item.title,item]));
+  const recent=kbRecents().map(title=>byTitle.get(title)).filter(Boolean);
+  return {label:recent.length?'Seus modelos recentes':'Modelos sugeridos para começar',items:recent.length?recent:KB_DEFAULT_TITLES.map(title=>byTitle.get(title)).filter(Boolean)};
+ }
+ const matches=[];
+ for(const item of index){
+  let score=0,hits=0;
+  if(item.normTitle.includes(query))score+=170;
+  if(item.normSummary.includes(query))score+=130;
+  if(item.normTags.includes(query))score+=100;
+  if(item.normText.includes(query))score+=20;
+  for(const term of expanded){
+   if(item.normTitle.includes(term)){score+=24;hits++}
+   else if(item.normSummary.includes(term)){score+=18;hits++}
+   else if(item.normTags.includes(term)){score+=12;hits++}
+   else if(item.normText.includes(term)){score+=2;hits++}
   }
-  return score;
- };
- if(query){
-  const found=index.map(item=>{const direct=(item.normTitle.includes(query)?90:0)+(item.normSummary.includes(query)?70:0)+(item.normTags.includes(query)?45:0)+(item.normText.includes(query)?10:0);return {item,score:direct?direct+rank(item):0}}).filter(x=>x.score>0);
-  found.sort((a,b)=>b.score-a.score||a.item.index-b.item.index);
-  return {label:'Resultados da pesquisa',items:found.map(({item,score})=>({...item,hits:score}))};
+  if(score>0&&(terms.length<3||hits>=Math.min(2,terms.length)||item.normTitle.includes(query)||item.normSummary.includes(query)))matches.push({...item,hits:score});
  }
- if(summary){
-  const found=index.map(item=>({item,score:rank(item)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.item.index-b.item.index);
-  if(found.length)return {label:'Sugestões para o resumo',items:found.map(({item,score})=>({...item,hits:score}))};
- }
- const byTitle=new Map(index.map(item=>[item.title,item]));
- const recent=kbRecents().map(title=>byTitle.get(title)).filter(Boolean);
- if(recent.length)return {label:'Seus modelos recentes',items:recent};
- return {label:'Modelos sugeridos para começar',items:KB_DEFAULT_TITLES.map(title=>byTitle.get(title)).filter(Boolean)};
+ matches.sort((a,b)=>b.hits-a.hits||a.index-b.index);
+ return {label:matches.length+' conhecimento(s) encontrados · role para visualizar todos',items:matches};
 }
 function kbRender(){
  const area=$('#kbResults');area.replaceChildren();const {label,items}=kbCandidates();
  $('#kbResultsLabel').textContent=label;
+ const fragment=document.createDocumentFragment();
  for(const item of items){
-  const b=document.createElement('button');b.className='kb-option';b.type='button';
+  const b=document.createElement('div');b.className='kb-option kb-knowledge-entry';
   const strong=document.createElement('strong');strong.textContent=item.title;
-  const sub=document.createElement('small');sub.textContent=item.hits?'Correspondência com a pesquisa ou resumo':'Modelo disponível';
-  b.append(strong,sub);
-  b.onclick=()=>{kbSelected=item;kbPreview();show('form');kbApply('descricao');kbRender()};
-  area.append(b);
+  const actions=document.createElement('div');actions.className='kb-entry-actions';
+  const preview=document.createElement('button');preview.type='button';preview.textContent='Visualizar';preview.onclick=()=>{kbSelected=item;kbPreview()};
+  const use=document.createElement('button');use.type='button';use.textContent='Aplicar descrição';use.onclick=()=>{kbSelected=item;kbApply('descricao')};
+  actions.append(preview,use);
+  if(KB_RESOLUTIONS[item.title]){const solve=document.createElement('button');solve.type='button';solve.textContent='Aplicar orientação';solve.title='Revise a orientação antes de registrar procedimentos executados';solve.onclick=()=>{kbSelected=item;kbApply('resolucao')};actions.append(solve)}
+  b.append(strong,actions);fragment.append(b);
  }
- if(!area.childElementCount)area.textContent='Nenhum modelo encontrado.';
+ if(!items.length){const p=document.createElement('p');p.textContent='Nenhum conhecimento encontrado.';fragment.append(p)}
+ area.append(fragment);
 }
 function kbPreview(){if(!kbSelected)return;const result=kbFill(kbSelected.txt);$('#kbChosen').hidden=false;$('#kbSelectedTitle').textContent=kbSelected.title;$('#kbPreview').textContent=result.rendered;$('#kbMissing').textContent=result.missing.length?'Campos sem dados serão mantidos como marcadores: '+[...new Set(result.missing)].map(x=>'['+x+']').join(', '):''}
 // Resumos curtos alinhados aos modelos existentes, sem afirmar ações não comprovadas.
@@ -853,7 +865,7 @@ function kbApply(field){
  // Atualizar ambos na mesma ação. O listener do resumo limpa a sugestão anterior.
  kbRemember(kbSelected.title);
  target.value=rendered;
- summary.value=newSummary;
+ if(field==='descricao')summary.value=newSummary;
  summary.dispatchEvent(new Event('input',{bubbles:true}));
  target.dispatchEvent(new Event('input',{bubbles:true}));
  kbSelected=null;
