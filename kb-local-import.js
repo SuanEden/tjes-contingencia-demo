@@ -12,8 +12,77 @@ const status=wrap.querySelector('#kbLocalStatus'),results=wrap.querySelector('#k
 const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
 let articles=[],indexed=[],error=false,searchTimer=null;
 const summaryInput=document.querySelector('#ticketForm [name="problema"]');
-const stopWords=new Set(['para','como','com','sem','uma','uns','das','dos','que','por','de','da','do','em','na','no','um','ao','aos','incidente','solicitacao','solicitação']);
-function significantTerms(value){return normalize(value).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!stopWords.has(w)).slice(0,8)}
+const stopWords=new Set(['para','como','com','uma','uns','das','dos','que','por','de','da','do','em','na','no','um','ao','aos','incidente','solicitacao','solicitar','usuario','usuaria','requerente','problema','sistema','erro','preciso','precisa','gostaria','informando','relata','relatando','acesso','realizar','fazer','esta','estao','tem','ter','mais','qual','quando','durante']);
+const synonymGroups=[
+ ['senha','reset','redefinir','redefinicao','recuperar','recuperacao','troca senha','esqueceu senha','alterar senha','desbloquear senha'],
+ ['login','logon','logar','autenticacao','autenticar','entrar','conectar','conexao','credenciais'],
+ ['bloqueio','bloqueado','bloqueada','desbloqueio','desbloquear','intrusao','conta travada'],
+ ['pje','processo judicial eletronico','pjeoffice','assinador','assinatura digital'],
+ ['certificado digital','token','cartao criptografico','certificacao','icp brasil','assinatura digital'],
+ ['email','e-mail','correio eletronico','webmail','groupwise','caixa postal','mensagem eletronica'],
+ ['impressora','impressao','imprimir','toner','fotocondutor','papel','fila de impressao'],
+ ['rede','internet','wifi','wi-fi','conectividade','sem conexao','ethernet','proxy'],
+ ['lento','lentidao','travando','travamento','demora','nao responde','congelando'],
+ ['instalar','instalacao','reinstalar','configurar','configuracao','atualizar','atualizacao'],
+ ['cadastro','cadastrar','inclusao','incluir','criar usuario','novo usuario'],
+ ['permissao','perfil','habilitacao','liberacao','conceder acesso','autorizacao'],
+ ['navegador','browser','firefox','mozilla','chrome','google chrome','edge'],
+ ['chamado','ticket','assyst','central de servicos','service desk','atendimento'],
+ ['sei','sistema eletronico de informacoes','processo administrativo'],
+ ['documento','arquivo','anexo','pdf','digitalizar','digitalizacao'],
+ ['telefone','ramal','telefonia','ligacao','aparelho telefonico'],
+ ['erro 403','403','acesso negado','sem permissao'],
+ ['erro 404','404','pagina nao encontrada','link quebrado']
+];
+const synonymMap=new Map();
+for(const group of synonymGroups){
+ const terms=[...new Set(group.flatMap(s=>normalize(s).split(/[^a-z0-9]+/).filter(x=>x.length>=4)))];
+ for(const term of terms){
+  if(!synonymMap.has(term))synonymMap.set(term,new Set());
+  for(const synonym of terms)if(synonym!==term)synonymMap.get(term).add(synonym);
+ }
+}
+function significantTerms(value){
+ return [...new Set(normalize(value).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!stopWords.has(w)))].slice(0,12);
+}
+function articleSections(article){
+ const text=String(article.text||'');
+ const start=text.search(/\bPROBLEMA\b/i),solution=text.search(/\bSOLUÇÃO\b/i);
+ const bodyStart=Math.max(0,start);
+ const issue=start>=0?text.slice(bodyStart+8,solution>start?solution:bodyStart+1200):'';
+ const header=text.slice(0,Math.max(0,start>=0?start:450)).replace(/\b(GSC|CRIADO EM|PUBLICADO EM|VISUALIZAÇÕES|USOS|ÚLTIMA VISUALIZAÇÃO)\b/gi,' ');
+ return {issue:normalize(issue.slice(0,1800)),header:normalize(header.slice(0,500))};
+}
+function makeEntry(article){
+ const sections=articleSections(article),heading=articleHeading(article);
+ const primary=normalize(String(article.key||'').split('|')[0]+' '+heading+' '+sections.header);
+ const category=normalize(String(article.category||'')+' '+String(article.group||''));
+ return {article,head:primary,group:category,issue:sections.issue,body:normalize(article.text)};
+}
+function relevance(entry,query,terms){
+ let score=0,matched=0;
+ if(entry.head.includes(query))score+=125;
+ if(entry.issue.includes(query))score+=105;
+ if(entry.group.includes(query))score+=45;
+ for(const term of terms){
+  if(entry.head.includes(term)){score+=32;matched++;continue}
+  if(entry.issue.includes(term)){score+=25;matched++;continue}
+  if(entry.group.includes(term)){score+=14;matched++;continue}
+  if(entry.body.includes(term)){score+=4;matched++;continue}
+  const alternatives=synonymMap.get(term);
+  if(alternatives){
+   let best=0;
+   for(const alias of alternatives){
+    if(entry.head.includes(alias)){best=12;break}
+    if(entry.issue.includes(alias))best=Math.max(best,10);
+    else if(entry.body.includes(alias))best=Math.max(best,2);
+   }
+   if(best){score+=best;matched++}
+  }
+ }
+ if(terms.length>=3&&matched<2&&!entry.head.includes(query)&&!entry.issue.includes(query))return 0;
+ return score+(matched===terms.length&&matched>1?20:0);
+}
 function readAll(){return new Promise((resolve,reject)=>{
  const opening=indexedDB.open(DB,1);
  opening.onupgradeneeded=()=>{if(!opening.result.objectStoreNames.contains(STORE))opening.result.createObjectStore(STORE,{keyPath:'key'})};
@@ -66,15 +135,8 @@ function render(){
  if(!terms.length){status.textContent='Escreva um assunto mais específico para encontrar artigos.';return}
  const matches=[];
  for(const entry of indexed){
-  let score=0;
-  if(entry.head.includes(q))score+=120;
-  if(entry.group.includes(q))score+=60;
-  for(const term of terms){
-   if(entry.head.includes(term))score+=24;
-   else if(entry.group.includes(term))score+=12;
-   else if(entry.body.includes(term))score+=3;
-  }
-  if(score)matches.push({r:entry.article,score});
+  const score=relevance(entry,q,terms);
+  if(score>0)matches.push({r:entry.article,score});
  }
  matches.sort((a,b)=>b.score-a.score);
  matches.length=Math.min(matches.length,20);
@@ -96,8 +158,5 @@ function render(){
 function scheduleRender(){if(searchTimer!==null)clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchTimer=null;render()},130)}
 search.addEventListener('input',scheduleRender);
 if(summaryInput)summaryInput.addEventListener('input',scheduleRender);
-loadArticles().then(rows=>{articles=rows;indexed=rows.map(article=>({
- article,head:normalize(String(article.key||'')+' '+String(article.title||'')),
- group:normalize(String(article.category||'')+' '+String(article.group||'')),body:normalize(article.text)
-}));render()}).catch(()=>{error=true;render()});
+loadArticles().then(rows=>{articles=rows;indexed=rows.map(makeEntry);render()}).catch(()=>{error=true;render()});
 })();
