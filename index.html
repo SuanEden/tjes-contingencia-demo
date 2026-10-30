@@ -871,6 +871,7 @@ function kbRender(){
  }
  if(!items.length){const p=document.createElement('p');p.textContent='Nenhum conhecimento encontrado.';fragment.append(p)}
  area.append(fragment);
+ if(!kbSelected)window.tjesEnhance?.showGuide(($('#ticketForm').elements.namedItem('problema').value.trim().length>=3||$('#kbSearch').value.trim().length>=3)?items[0]:null);
 }
 function kbPreview(){if(!kbSelected)return;window.tjesEnhance?.showGuide(kbSelected);const result=kbFill(kbSelected.txt);$('#kbChosen').hidden=false;$('#kbSelectedTitle').textContent=kbSelected.title;$('#kbPreview').textContent=result.rendered;$('#kbMissing').textContent=result.missing.length?'Campos sem dados serão mantidos como marcadores: '+[...new Set(result.missing)].map(x=>'['+x+']').join(', '):''}
 // Resumos curtos alinhados aos modelos existentes, sem afirmar ações não comprovadas.
