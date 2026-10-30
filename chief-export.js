@@ -3,7 +3,7 @@
 const $=s=>document.querySelector(s);
 const box=$('#view-backup .transfer-panel');if(!box)return;
 const panel=document.createElement('section');panel.className='chief-export-panel';
-panel.innerHTML='<h3>Exportar para a chefia</h3><p class="hint">Exporta os chamados criados hoje em XML compatível com o relatório da chefia e abre uma mensagem preparada no Teams. Anexe o arquivo XML e confirme o envio manualmente.</p><div class="chief-export-fields"><label>Destinatário de teste no Teams <input type="email" id="chiefRecipient" value="suan.nascimento@lanlink.com.br" readonly aria-readonly="true"></label></div><div class="row" style="margin-top:10px"><button type="button" class="primary" id="chiefExport">↓ Exportar XML e abrir Teams</button><span class="hint" id="chiefStatus" aria-live="polite"></span></div><p class="hint">Anexos não estão incluídos no XML. Este arquivo contém informações pessoais: use somente um destinatário autorizado. Nenhuma mensagem é enviada automaticamente.</p>';
+panel.innerHTML='<h3>Compartilhar relatório com a chefia</h3><p class="hint">Gera o XML dos chamados de hoje e abre o compartilhamento do dispositivo. Selecione o Teams para compartilhar o arquivo e a mensagem juntos.</p><div class="chief-export-fields"><label>Destinatário de teste no Teams <input type="email" id="chiefRecipient" value="suan.nascimento@lanlink.com.br" readonly aria-readonly="true"></label></div><div class="row" style="margin-top:10px"><button type="button" class="primary" id="chiefExport">↗ Compartilhar relatório com a chefia</button><span class="hint" id="chiefStatus" aria-live="polite"></span></div><p class="hint">O compartilhamento exige sua confirmação no Teams. O XML contém dados dos atendimentos; compartilhe somente com destinatários autorizados.</p>';
 const transferGrid=box.querySelector('.transfer-grid');
 if(transferGrid)transferGrid.insertAdjacentElement('afterend',panel);else box.append(panel);
 const CHIEF_RECIPIENT='suan.nascimento@lanlink.com.br';
@@ -28,20 +28,28 @@ function download(name,txt){
  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();
  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
-$('#chiefExport').addEventListener('click',()=>{
+$('#chiefExport').addEventListener('click',async()=>{
  const operator='Equipe TJES',recipient=CHIEF_RECIPIENT;
  const tickets=onlyToday();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)){$('#chiefStatus').textContent='Informe o e-mail corporativo da chefia.';$('#chiefRecipient').focus();return}
  if(!tickets.length){$('#chiefStatus').textContent='Nenhum atendimento criado hoje neste navegador.';return}
- const date=localDay(new Date()),file='TJES_chefia_'+date+'.xml';
- const msg='Olá! Segue o relatório TJES de '+new Date().toLocaleDateString('pt-BR')+', enviado pela equipe TJES. Total: '+tickets.length+' chamado(s). Arquivo: '+file+'.';
- const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg);
+ const date=localDay(new Date()),fileName='TJES_chefia_'+date+'.xml';
+ const msg='Olá! Segue o relatório TJES de '+new Date().toLocaleDateString('pt-BR')+', enviado pela equipe TJES. Total: '+tickets.length+' chamado(s).';
+ const blob=new Blob([xmlFor(tickets,operator)],{type:'application/xml;charset=utf-8'});
+ const file=new File([blob],fileName,{type:'application/xml'});
  try{
-  
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   await navigator.share({title:'Relatório diário TJES',text:msg,files:[file]});
+   $('#chiefStatus').textContent='Compartilhamento aberto. Selecione Microsoft Teams e confirme o destinatário antes de enviar.';
+   return;
+  }
+  download(fileName,await blob.text());
+  const teams='https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(recipient)+'&message='+encodeURIComponent(msg+' Arquivo: '+fileName+'.');
   const chat=window.open(teams,'_blank','noopener,noreferrer');
-  download(file,xmlFor(tickets,operator));
-  $('#chiefStatus').textContent=tickets.length+' chamado(s) exportado(s). No Teams, anexe '+file+' e clique em Enviar.'+(chat?'':' Se necessário, habilite a abertura do Teams.');
- }catch(e){$('#chiefStatus').textContent='Erro ao preparar exportação: '+(e?.message||'verifique o armazenamento')}
+  $('#chiefStatus').textContent='XML baixado. '+(chat?'Teams aberto.':'Abra o Teams manualmente.')+' Anexe '+fileName+' e confirme o envio.';
+ }catch(e){
+  if(e?.name==='AbortError'){$('#chiefStatus').textContent='Compartilhamento cancelado. Nenhum envio foi realizado.';return}
+  $('#chiefStatus').textContent='Não foi possível abrir o compartilhamento: '+(e?.message||'tente novamente');
+ }
 });
 window.tjesChiefXML={xmlFor,onlyToday,columns};
 })();
