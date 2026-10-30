@@ -765,6 +765,16 @@ function kbFill(text){
  return {rendered,missing};
 }
 // O histórico guarda apenas títulos de modelos neste navegador, nunca dados do chamado.
+const STANDARD_SATE0070_TITLE='SATE0070 — Erro de autenticação no PJe';
+const STANDARD_SATE0070_DATA=(()=>{const row=scripts.find(x=>x[0]===STANDARD_SATE0070_TITLE);return row?{row:[...row],tags:(KB_TAGS.find(x=>x[0]===STANDARD_SATE0070_TITLE)?.[1]||[]).slice(),summary:KB_SUMMARIES[STANDARD_SATE0070_TITLE],resolution:KB_RESOLUTIONS[STANDARD_SATE0070_TITLE]}:null})();
+function ensureStandardSate0070(){
+ const def=STANDARD_SATE0070_DATA;if(!def)return;
+ if(!scripts.some(x=>x[0]===STANDARD_SATE0070_TITLE))scripts.push([...def.row]);
+ if(!KB_TAGS.some(x=>x[0]===STANDARD_SATE0070_TITLE))KB_TAGS.push([STANDARD_SATE0070_TITLE,[...def.tags]]);
+ if(!KB_SUMMARIES[STANDARD_SATE0070_TITLE])KB_SUMMARIES[STANDARD_SATE0070_TITLE]=def.summary;
+ if(!KB_RESOLUTIONS[STANDARD_SATE0070_TITLE])KB_RESOLUTIONS[STANDARD_SATE0070_TITLE]=def.resolution;
+ invalidateKbSearchIndex();
+}
 const KB_RECENTS_KEY='tjes_kb_recent_titles_v1';
 const KB_DEFAULT_TITLES=['SATE0013 — Reset de senha — acesso à intranet','SATE0903 — PJeOffice — Local Network Access Checks','SATE0275 — Solicitação de emissão/renovação de certificado','SATE0760 — Reset de senha de aposentado','SATE0375 — encerramento sem retorno','SATE0385 — solicitação de telefone ou ramal'];
 function kbRecents(){try{const saved=JSON.parse(localStorage.getItem(KB_RECENTS_KEY)||'[]');return Array.isArray(saved)?saved.filter(x=>typeof x==='string').slice(0,8):[]}catch{return []}}
@@ -964,6 +974,7 @@ function applyKnowledge(snapshot){
 }
 function loadKnowledgeSnapshot(){
  try{const saved=localStorage.getItem(TRANSFER_KB_KEY);if(saved)applyKnowledge(JSON.parse(saved))}catch{localStorage.removeItem(TRANSFER_KB_KEY)}
+ ensureStandardSate0070();
 }
 function selectedSections(prefix){return ['Tickets','Contacts','Knowledge','Settings'].filter(s=>$('#'+prefix+s).checked).map(s=>s.toLowerCase())}
 function buildExport(sections){
