@@ -69,5 +69,130 @@ $('#chiefContinue').addEventListener('click',()=>{
  notice.close();
  exportReport();
 });
+
+// Importação local reversível do XML de relatório gerado pelo sistema.
+const importPanel=document.createElement('section');
+importPanel.className='chief-xml-import';
+importPanel.innerHTML='<h3>Importar atendimentos de um relatório XML</h3><p class="hint">Selecione um XML exportado em “Compartilhar relatório com a chefia”. Os atendimentos novos serão acrescentados aos seus registros locais, sem substituir os existentes.</p><div class="row"><input type="file" id="chiefXmlFile" accept=".xml,text/xml,application/xml" aria-label="Selecionar relatório XML" style="max-width:360px"><button type="button" id="chiefXmlAnalyze">Analisar XML</button></div><p id="chiefXmlFeedback" role="status" aria-live="polite" class="hint"></p><div id="chiefXmlPreview" hidden><p id="chiefXmlSummary"></p><div style="overflow-x:auto;max-height:280px"><table><thead><tr><th>Referência</th><th>Data</th><th>Usuário</th><th>Resumo</th><th>Resultado</th></tr></thead><tbody id="chiefXmlRows"></tbody></table></div><div class="row" style="margin-top:12px"><button type="button" class="primary" id="chiefXmlConfirm">Adicionar atendimentos novos</button><button type="button" id="chiefXmlCancel">Cancelar</button></div></div>';
+panel.insertAdjacentElement('afterend',importPanel);
+let pendingChiefImport=null;
+const inputXml=$('#chiefXmlFile'),feedbackXml=$('#chiefXmlFeedback'),previewXml=$('#chiefXmlPreview');
+const normalizeReference=v=>String(v||'').trim().toLocaleLowerCase('pt-BR');
+const dateFromReport=value=>{
+ const m=/^(\d{2})\/(\d{2})\/(\d{2}|\d{4}) (\d{2}):(\d{2})$/.exec(String(value||'').trim());
+ if(!m)throw Error('Data/hora inválida no relatório: '+String(value||'').slice(0,35));
+ const yyyy=m[3].length===2?2000+Number(m[3]):Number(m[3]);
+ const day=Number(m[1]),month=Number(m[2]),hour=Number(m[4]),minute=Number(m[5]);
+ const d=new Date(yyyy,month-1,day,hour,minute);
+ if(d.getFullYear()!==yyyy||d.getMonth()!==month-1||d.getDate()!==day||d.getHours()!==hour||d.getMinutes()!==minute)throw Error('Data inexistente no XML.');
+ return d.toISOString();
+};
+const dateKey=iso=>{
+ const d=new Date(iso);
+ if(Number.isNaN(d.getTime()))return '';
+ return [d.getFullYear(),d.getMonth()+1,d.getDate(),d.getHours(),d.getMinutes()].join('-');
+};
+const duplicateKey=t=>normalizeReference(t.chamado)+'|'+dateKey(t.created);
+function readChiefXML(xmlString){
+ if(/<!\s*(?:DOCTYPE|ENTITY)\b/i.test(xmlString))throw Error('XML com declarações externas não é permitido.');
+ const doc=new DOMParser().parseFromString(xmlString,'application/xml');
+ if(doc.querySelector('parsererror')||doc.documentElement?.localName!=='table')throw Error('O arquivo não é um XML de relatório válido.');
+ const rows=Array.from(doc.documentElement.children);
+ if(rows.length<2||rows.length>10001||rows.some(r=>r.tagName!=='row'))throw Error('O XML não contém atendimentos válidos ou excede 10.000 linhas.');
+ const cells=r=>Array.from(r.children).map(c=>{
+  if(c.tagName!=='column'||c.children.length)throw Error('Estrutura XML inesperada.');
+  return (c.textContent||'').trim();
+ });
+ const headers=cells(rows[0]);
+ if(headers.length!==columns.length||headers.some((h,i)=>h!==columns[i]))throw Error('Cabeçalho incompatível. Selecione um XML gerado pela opção de envio à chefia.');
+ const tickets=[];
+ for(let i=1;i<rows.length;i++){
+  const values=cells(rows[i]);
+  if(values.length!==headers.length)throw Error('Linha '+(i+1)+' com número de colunas incorreto.');
+  const val=name=>values[headers.indexOf(name)];
+  const created=dateFromReport(val('Data/hora de registro'));
+  const chamado=val('Referência'),nome=val('Nome afetado'),problema=val('Resumo');
+  if(!chamado||!problema)throw Error('Linha '+(i+1)+' sem referência ou resumo.');
+  if(values.some(v=>v.length>20000))throw Error('Linha '+(i+1)+' contém um campo muito grande.');
+  const idSource=val('ID local');
+  const statusOriginal=val('Status do atendimento');
+  tickets.push({
+   id:/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(idSource)?idSource:crypto.randomUUID(),
+   chamado,created,updated:created,nome,
+   telefone:val('Telefone de contato'),ramal:val('Ramal de contato'),
+   sala:val('Salas do edifício'),edificio:'',
+   problema,descricao:val('Descrição'),resolucao:'',
+   status:['Pendente','Registrado','Resolvido','Transferido ao sistema oficial'].includes(statusOriginal)?statusOriginal:'Pendente',
+   panelId:null
+  });
+ }
+ return tickets;
+}
+function evaluateChiefImport(incoming){
+ const keys=new Set(data.tickets.map(duplicateKey));
+ const ids=new Set(data.tickets.map(t=>String(t.id)));
+ const fresh=[],dupes=[];
+ for(const raw of incoming){
+  const key=duplicateKey(raw);
+  if(keys.has(key)){dupes.push(raw);continue;}
+  keys.add(key);
+  const t={...raw};
+  if(ids.has(String(t.id)))t.id=crypto.randomUUID();
+  ids.add(String(t.id));
+  fresh.push(t);
+ }
+ return {fresh,dupes};
+}
+function resetChiefPreview(){
+ pendingChiefImport=null;previewXml.hidden=true;$('#chiefXmlRows').replaceChildren();
+}
+inputXml.addEventListener('change',()=>{resetChiefPreview();feedbackXml.textContent='';});
+$('#chiefXmlCancel').addEventListener('click',()=>{resetChiefPreview();feedbackXml.textContent='Importação cancelada. Nenhum registro foi alterado.';});
+$('#chiefXmlAnalyze').addEventListener('click',async()=>{
+ resetChiefPreview();
+ if(locked){feedbackXml.textContent='O armazenamento local está bloqueado. Importe apenas após resolver o carregamento dos dados.';return;}
+ const file=inputXml.files?.[0];
+ if(!file){feedbackXml.textContent='Selecione um arquivo XML antes de analisar.';return;}
+ if(file.size>5*1024*1024){feedbackXml.textContent='XML muito grande. Limite: 5 MB.';return;}
+ try{
+  const incoming=readChiefXML(await file.text());
+  const {fresh,dupes}=evaluateChiefImport(incoming);
+  pendingChiefImport=incoming;
+  $('#chiefXmlSummary').textContent='Encontrados: '+incoming.length+' atendimento(s). Novos: '+fresh.length+'. Já existentes/repetidos: '+dupes.length+'.';
+  const accepted=new Set(fresh.map(duplicateKey));
+  const tbody=$('#chiefXmlRows');
+  for(const t of incoming.slice(0,200)){
+   const tr=document.createElement('tr');
+   for(const value of [t.chamado,new Date(t.created).toLocaleString('pt-BR'),t.nome,t.problema,accepted.has(duplicateKey(t))?'Novo':'Duplicado']){
+    const td=document.createElement('td');td.textContent=value||'—';tr.append(td);
+   }
+   tbody.append(tr);
+  }
+  if(incoming.length>200){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='Prévia limitada aos primeiros 200 atendimentos.';tr.append(td);tbody.append(tr);}
+  $('#chiefXmlConfirm').disabled=!fresh.length;
+  previewXml.hidden=false;
+  feedbackXml.textContent='Análise concluída. Confirme abaixo para adicionar somente os registros novos.';
+ }catch(e){feedbackXml.textContent='Não foi possível analisar o XML: '+e.message;}
+});
+$('#chiefXmlConfirm').addEventListener('click',async()=>{
+ if(!pendingChiefImport||locked)return;
+ const {fresh,dupes}=evaluateChiefImport(pendingChiefImport);
+ if(!fresh.length){feedbackXml.textContent='Nenhum atendimento novo para importar.';resetChiefPreview();return;}
+ if(!confirm('Adicionar '+fresh.length+' atendimento(s) aos registros locais? Os atendimentos atuais serão preservados.'))return;
+ const snapshot=data.tickets.slice();
+ try{
+  data.tickets=[...data.tickets,...fresh];
+  await save();
+  resetChiefPreview();
+  inputXml.value='';
+  feedbackXml.textContent='Importação concluída: '+fresh.length+' atendimento(s) adicionado(s). '+dupes.length+' duplicado(s) ignorado(s).';
+  $('#dateFilter').value='';
+  show('list');
+ }catch(e){
+  data.tickets=snapshot;
+  feedbackXml.textContent='Falha ao salvar. Os registros anteriores foram mantidos. '+e.message;
+ }
+});
+
 window.tjesChiefXML={xmlFor,onlyToday,columns};
 })();
