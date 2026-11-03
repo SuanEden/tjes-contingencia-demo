@@ -410,6 +410,19 @@ function autoFillContact(){
 }
 $('#f-nome').addEventListener('input',autoFillContact);
 $('#f-nome').addEventListener('change',autoFillContact);
+// Atualiza o cabeçalho da descrição com os dados do cadastro local do usuário afetado,
+// preservando textos e informações já digitados, inclusive a base de conhecimento.
+function refreshDescriptionFromAffectedUser(){
+ const form=$('#ticketForm');
+ const fields=Object.fromEntries(new FormData(form).entries());
+ const current=$('#f-descricao');
+ current.value=formatStandardDescription({...fields,descricao:current.value});
+}
+for(const fieldName of ['nome','telefone','ramal','email','secao','departamento','edificio','sala','endereco']){
+ const input=$('#ticketForm').elements.namedItem(fieldName);
+ input?.addEventListener('change',refreshDescriptionFromAffectedUser);
+}
+
 const enc=new TextEncoder(),dec=new TextDecoder();
 const un64=s=>Uint8Array.from(atob(s),x=>x.charCodeAt(0));
 async function derive(password,s){const raw=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:250000,hash:'SHA-256'},raw,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
@@ -907,12 +920,17 @@ function kbApply(field){
  if(field==='resolucao'&&!resolutionTemplate){alert('Este conhecimento não possui modelo de resolução. Registre somente as ações realmente realizadas.');return}
  const {rendered}=kbFill(field==='resolucao'?resolutionTemplate:kbSelected.txt);
  const newSummary=KB_SUMMARIES[kbSelected.title]||kbSelected.title;
- // O resumo é atualizado sem confirmação; somente a substituição de uma descrição preenchida requer autorização.
- if(target.value.trim() && target.value!==rendered && !confirm('O campo já contém texto. Deseja substituí-lo pelo modelo selecionado?'))return;
- // Atualizar ambos na mesma ação. O listener do resumo limpa a sugestão anterior.
+ // O texto de conhecimento é acrescentado ao final, sem substituir os dados do afetado ou o relato existente.
  kbRemember(kbSelected.title);
- target.value=rendered;
- if(field==='descricao')summary.value=newSummary;
+ if(field==='descricao'){
+  const fields=kbFormValues();
+  const original=window.tjesFormatDescription?window.tjesFormatDescription(fields):target.value;
+  const fragment=rendered.trim();
+  target.value=original.trimEnd()+(fragment?'\n\n'+fragment:'');
+ }else{
+  target.value=rendered;
+ }
+ if(field==='descricao'&&!summary.value.trim())summary.value=newSummary;
  summary.dispatchEvent(new Event('input',{bubbles:true}));
  target.dispatchEvent(new Event('input',{bubbles:true}));
  kbSelected=null;
