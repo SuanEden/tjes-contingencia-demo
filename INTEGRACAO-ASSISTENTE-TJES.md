@@ -48,3 +48,18 @@ Essas operações permanecem na extensão. Uma integração servidor-a-servidor 
 - Verificar se a publicação do GitHub Pages já terminou.
 
 **Não considerar a integração como acesso funcional ao Assyst.**
+
+
+## Polimento de estabilidade — 11/11/2026
+- Busca por nome, serviço e resumo na lista de padrões integrados.
+- Redefinição de senha gerada por Serviço/Categoria redirecionada ao modelo com escolha explícita Chefia/Chefiado.
+- Prévia e dados do usuário afetado permanecem distintos dos dados da chefia.
+- JS do gerador e da integração verificado sintaticamente; cinco amostras de geração de modelos passaram.
+- O parâmetro de versão do script foi atualizado para reduzir o risco de usar uma cópia antiga em cache.
+
+### Extensão correspondente — versão 0.26.3
+- Observador de perfil do atendente limitado e desconectado após identificar o primeiro perfil válido.
+- Menos verificações automáticas de classificação quando a aba está oculta ou ocupada.
+- Mantido bloqueio de uma tentativa de atribuição por formulário; exclusões posteriores não são revertidas.
+
+Não houve validação end-to-end no Assyst privado nem teste visual automatizado do GitHub Pages. A publicação do site depende do fluxo do GitHub Pages.
