@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "source": "assistente-tjes-assyst",
+  "notice": "Modelos locais para rascunhos e demonstração. Sem acesso ao Assyst autenticado.",
+  "procedures": [
+    {
+      "id": "reset-senha-1840",
+      "name": "Reset de senha",
+      "serviceId": "1840",
+      "summary": "Solicitação de redefinição de senha",
+      "description": "O solicitante entrou em contato com a Central de Serviços para solicitar a redefinição de senha de acesso.\n\nDados do solicitante:\n• Nome do solicitante: [PREENCHER].\n• Contato: [PREENCHER].\n\nDados para redefinição:\n• Usuário ou conta: [PREENCHER].\n• Atendimento para o próprio solicitante ou para terceiro?: [CONFERIR].",
+      "reviewNotes": "Serviço 1840 identificado pelo usuário como Senha. Conferir no Assyst o nome exato, a identidade do usuário afetado e os requisitos de autorização antes de salvar. Não afirmar que a redefinição foi executada. A escolha Chefia/Chefiado no cartão determina o texto final; esta descrição é somente a base neutra. Não presumir autorização ou identidade do terceiro.",
+      "variants": [
+        {
+          "role": "Chefia",
+          "description": "O solicitante entrou em contato com a Central de Serviços para solicitar a redefinição de sua própria senha de acesso.\n\nDados do solicitante:\n• Nome do solicitante: [PREENCHER].\n• Contato: [PREENCHER].\n• Usuário ou conta: [PREENCHER]."
+        },
+        {
+          "role": "Chefiado",
+          "description": "O solicitante entrou em contato com a Central de Serviços para solicitar a redefinição de senha de acesso de um chefiado.\n\nDados do solicitante (chefia):\n• Nome do solicitante: [PREENCHER].\n• Contato: [PREENCHER].\n\nDados do usuário afetado (chefiado):\n• Nome do chefiado: [PREENCHER].\n• Usuário ou conta do chefiado: [PREENCHER]."
+        }
+      ]
+    },
+    {
+      "id": "pjeoffice-indisponivel-1990",
+      "name": "PJeOffice indisponível",
+      "serviceId": "1990",
+      "summary": "Indisponibilidade do PJeOffice ao realizar assinatura no PJe 1º Grau",
+      "description": "O solicitante entrou em contato com a Central de Serviços para relatar uma ocorrência no sistema PJe 1º Grau, referente à categoria \"ERRO NAS FUNCIONALIDADES\".\n\nDados do usuário afetado:\n• Nome: [PREENCHER].\n• Contato: [PREENCHER].\n\nOcorrência relatada:\n• Mensagem de erro: \"PJeOffice indisponível\".\n• Detalhes da ocorrência: Ao tentar realizar uma assinatura no sistema PJe 1º Grau, é apresentada a mensagem de erro \"PJeOffice indisponível\", impossibilitando a conclusão da assinatura.",
+      "reviewNotes": "Padrão de ocorrência de indisponibilidade do PJeOffice confirmado pelo usuário para o fluxo catalogado no serviço 1990 (ERRO NAS FUNCIONALIDADES). Substituir os dados do afetado pelos dados corretos do chamado; não inventar dados de usuário, testes, resoluções ou procedimentos executados. Não salvar automaticamente."
+    },
+    {
+      "id": "certificado-digital-fornecer-token",
+      "name": "Certificado Digital — Fornecer Token",
+      "serviceId": null,
+      "summary": "Certificado Digital — Fornecer Token",
+      "description": "O solicitante entrou em contato com a Central de Serviços para solicitar o fornecimento de token de certificado digital (serviço Fornecer Token).\n\nDados do solicitante:\n• Nome completo: [PREENCHER].\n• Data de nascimento: [PREENCHER].\n• CPF: [PREENCHER].\n• Matrícula: [PREENCHER].\n• Cargo/Função: [PREENCHER].\n• E-mail institucional: [PREENCHER].\n• Local de trabalho: [PREENCHER].\n• Endereço: [PREENCHER].\n• Telefone (WhatsApp): [PREENCHER].\n\nMotivo da solicitação:\n• [PREENCHER]."
+    },
+    {
+      "id": "e-jud-criacao-usuario",
+      "name": "E-Jud — Criação de usuário",
+      "serviceId": null,
+      "summary": "Solicitação de criação de usuário — E-Jud",
+      "description": "O solicitante entrou em contato com a Central de Serviços para solicitar a criação de usuário no sistema E-Jud.\n\nDados do solicitante:\n• Nome do solicitante: [PREENCHER].\n• Contato: [PREENCHER].\n\nDados do usuário para criação de acesso:\n• Nome do usuário: [PREENCHER].\n• Identificador, CPF ou matrícula (quando aplicável): [PREENCHER].\n• Cargo/Função: [PREENCHER].\n• Unidade/lotação: [PREENCHER].\n\nDetalhes da solicitação:\n• Finalidade informada: [PREENCHER]."
+    }
+  ],
+  "paths": [
+    {
+      "serviceId": "1990",
+      "path": [
+        "SISTEMA PJe",
+        "PJE 1º GRAU",
+        "ERRO/FALHA",
+        "ERRO NAS FUNCIONALIDADES"
+      ]
+    },
+    {
+      "serviceId": "1840",
+      "path": [
+        "SERVIÇOS DE TI",
+        "SEGURANÇA",
+        "SENHAS",
+        "RESET DE SENHA"
+      ]
+    }
+  ]
+}
