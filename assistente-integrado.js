@@ -39,6 +39,14 @@ chooser.querySelector('#assistantGenerate').addEventListener('click',()=>{
  models.unshift(model);selected=model;role=null;render();
  message('Modelo local gerado para conferência. Não afirma resolução nem procedimento executado.');
 });
+const search=document.createElement('input');
+search.type='search';
+search.id='assistantModelSearch';
+search.placeholder='Filtrar padrões por nome ou serviço';
+search.setAttribute('aria-label','Pesquisar padrões de atendimento');
+search.style.cssText='width:100%;margin:0 0 12px;min-height:38px';
+panel.querySelector('.assistant-inner').insertBefore(search,panel.querySelector('.assistant-layout'));
+search.addEventListener('input',()=>render());
 const list=panel.querySelector('#assistantModelList');
 const detail=panel.querySelector('#assistantModelDetail');
 const feedback=panel.querySelector('#assistantModelMessage');
@@ -71,7 +79,15 @@ function description(){
 function message(text){feedback.textContent=text}
 function render(){
  list.replaceChildren();detail.replaceChildren();
- for(const model of models){
+ const term=search.value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim();
+ const matches=models.filter(m=>(m.name+' '+(m.serviceId||'')+' '+m.summary).normalize('NFD')
+  .replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').includes(term));
+ if(!matches.length){
+  const empty=document.createElement('p');empty.className='assistant-hint';
+  empty.textContent='Nenhum modelo encontrado. Tente outra busca ou gere um modelo por serviço e categoria.';
+  list.append(empty);
+ }
+ for(const model of matches){
   const b=document.createElement('button');b.type='button';b.className='assistant-card';
   b.setAttribute('aria-pressed',String(selected?.id===model.id));
   const strong=document.createElement('strong');strong.textContent=model.name;
