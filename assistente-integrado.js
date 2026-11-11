@@ -20,6 +20,19 @@ chooser.querySelector('#assistantGenerate').addEventListener('click',()=>{
  const service=chooser.querySelector('#assistantService').value.trim();
  const category=chooser.querySelector('#assistantCategory').value.trim();
  if(!service||!category){message('Informe Serviço e Categoria para gerar um modelo.');return;}
+ // A redefinição de senha exige distinguir chefia e chefiado;
+ // não permitir que um modelo genérico elimine essa escolha.
+ const normalized=category.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ if(/^(?:reset(?:e)? de senha|redefinicao de senha|esqueci (?:minha )?senha)$/.test(normalized)){
+  const standard=models.find(x=>x.serviceId==='1840'&&Array.isArray(x.variants));
+  if(standard){
+   selected=standard;role=null;render();
+   message('Use o modelo de Reset de senha e selecione Chefia ou Chefiado.');
+   return;
+  }
+  message('O modelo de senha exige a seleção Chefia ou Chefiado e não está disponível.');
+  return;
+ }
  const model=window.AssistenteTJESGerador?.gerar(service,category);
  if(!model){message('Não foi possível gerar o modelo. Confira os nomes informados.');return;}
  models=models.filter(x=>x.id!==model.id);
