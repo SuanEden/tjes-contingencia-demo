@@ -107,7 +107,7 @@ function normalizeArticles(payload){
  if(payload?.version!==1||!Array.isArray(payload.records)||payload.records.length<1||payload.records.length>10000)throw Error('Índice da biblioteca inválido');
  const unique=new Set();
  return payload.records.map((record,i)=>{
-  if(!record||typeof record!=='object'||typeof record.id!=='string'||!/^SATE\\d{4}$/i.test(record.id)||typeof record.text!=='string'||record.text.length>100000||unique.has(record.id))throw Error('Artigo inválido '+i);
+  if(!record||typeof record!=='object'||typeof record.id!=='string'||!/^SATE\d{4}$/i.test(record.id)||typeof record.text!=='string'||record.text.length>100000||unique.has(record.id))throw Error('Artigo inválido '+i);
   unique.add(record.id);
   return {key:record.id+'|'+(record.path||i),title:String(record.title||record.id),category:String(record.category||''),group:String(record.group||''),pages:Number(record.pages)||0,text:record.text};
  });
