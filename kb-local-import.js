@@ -98,24 +98,67 @@ function readAll(){return new Promise((resolve,reject)=>{
  opening.onsuccess=()=>{const db=opening.result;const tx=db.transaction(STORE,'readonly');
  const request=tx.objectStore(STORE).getAll();request.onsuccess=()=>resolve(request.result||[]);request.onerror=()=>reject(request.error);tx.oncomplete=()=>db.close();};
 });}
+// A base central é a fonte preferencial. A cópia distribuída com o site
+// continua disponível para primeira abertura sem rede. A última versão válida
+// é guardada no IndexedDB para futuras sessões offline.
+const KNOWLEDGE_REMOTE='https://raw.githubusercontent.com/SuanEden/tjes-base-conhecimento/main/';
+const VERSION_KEY='tjes_kb_central_version_v1';
+function normalizeArticles(payload){
+ if(payload?.version!==1||!Array.isArray(payload.records)||payload.records.length<1||payload.records.length>10000)throw Error('Índice da biblioteca inválido');
+ const unique=new Set();
+ return payload.records.map((record,i)=>{
+  if(!record||typeof record!=='object'||typeof record.id!=='string'||!/^SATE\\d{4}$/i.test(record.id)||typeof record.text!=='string'||record.text.length>100000||unique.has(record.id))throw Error('Artigo inválido '+i);
+  unique.add(record.id);
+  return {key:record.id+'|'+(record.path||i),title:String(record.title||record.id),category:String(record.category||''),group:String(record.group||''),pages:Number(record.pages)||0,text:record.text};
+ });
+}
+async function fetchJson(url){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+ try{const response=await fetch(url,{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error('HTTP '+response.status);return await response.json()}
+ finally{clearTimeout(timer)}
+}
+function writeAll(rows){
+ return new Promise((resolve,reject)=>{
+  const opening=indexedDB.open(DB,1);
+  opening.onupgradeneeded=()=>{if(!opening.result.objectStoreNames.contains(STORE))opening.result.createObjectStore(STORE,{keyPath:'key'})};
+  opening.onerror=()=>reject(opening.error);
+  opening.onsuccess=()=>{
+   const db=opening.result,tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);
+   tx.oncomplete=()=>{db.close();resolve()};
+   tx.onerror=()=>{db.close();reject(tx.error||Error('Não foi possível gravar a biblioteca'))};
+   store.clear();for(const row of rows)store.put(row);
+  };
+ });
+}
 async function loadArticles(){
+ let cached=[];
+ try{cached=await readAll()}catch(error){console.warn('TJES: cache de artigos indisponível',error)}
+ // Rede: somente usa uma edição se o manifesto e o conteúdo forem compatíveis.
  try{
-  const response=await fetch('./biblioteca-tjes.json',{cache:'no-cache'});
-  if(!response.ok)throw Error('Biblioteca indisponível (HTTP '+response.status+')');
-  const payload=await response.json();
-  if(payload.version!==1||!Array.isArray(payload.records)||payload.records.length!==472)throw Error('Índice de artigos inválido');
-  const unique=new Set();
-  return payload.records.map((record,i)=>{
-   if(!record||typeof record!=='object'||typeof record.id!=='string'||!record.id||typeof record.text!=='string'||record.text.length>100000||unique.has(record.id))throw Error('Artigo inválido '+i);
-   unique.add(record.id);
-   return {key:record.id+'|'+(record.path||i),title:String(record.title||record.id),category:String(record.category||''),group:String(record.group||''),pages:Number(record.pages)||0,text:record.text};
-  });
- }catch(e){
-  const local=await readAll();
-  if(!local.length)throw e;
-  status.textContent='Biblioteca online temporariamente indisponível; utilizando os artigos já armazenados neste navegador.';
-  return local;
- }
+  const manifest=await fetchJson(KNOWLEDGE_REMOTE+'versao.json');
+  if(manifest.schemaVersion!==1||!Number.isSafeInteger(manifest.contentVersion)||manifest.contentVersion<1||manifest.dataFile!=='biblioteca-tjes.json'||!Number.isSafeInteger(manifest.recordCount))throw Error('Manifesto central inválido');
+  const previous=Number(localStorage.getItem(VERSION_KEY)||0);
+  if(cached.length&&previous===manifest.contentVersion){
+   status.textContent='Biblioteca central v'+manifest.contentVersion+' disponível neste navegador, inclusive offline.';
+   return cached;
+  }
+  const payload=await fetchJson(KNOWLEDGE_REMOTE+manifest.dataFile);
+  const rows=normalizeArticles(payload);
+  if(rows.length!==manifest.recordCount)throw Error('Quantidade de artigos não corresponde ao manifesto');
+  try{await writeAll(rows);localStorage.setItem(VERSION_KEY,String(manifest.contentVersion))}
+  catch(error){console.warn('TJES: não foi possível armazenar a biblioteca',error)}
+  status.textContent='Biblioteca central atualizada: '+rows.length+' artigos (versão '+manifest.contentVersion+').';
+  return rows;
+ }catch(error){console.warn('TJES: fonte central indisponível',error.message)}
+ // O conteúdo já salvo prevalece sobre a cópia de fábrica caso esteja offline.
+ if(cached.length){status.textContent='Sem conexão com a base central: utilizando '+cached.length+' artigos em cache.';return cached}
+ try{
+  const payload=await fetchJson('./biblioteca-tjes.json');
+  const rows=normalizeArticles(payload);
+  try{await writeAll(rows)}catch(error){console.warn('TJES: sem cache persistente',error)}
+  status.textContent='Biblioteca de contingência incluída com o site: '+rows.length+' artigos.';
+  return rows;
+ }catch(error){throw Error('A biblioteca não pôde ser carregada: '+error.message)}
 }
 function articleHeading(article){
  const lines=String(article.text||'').split('\n').map(s=>s.trim()).filter(Boolean);
