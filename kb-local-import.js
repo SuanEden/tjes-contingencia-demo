@@ -134,7 +134,7 @@ function validCachedArticles(rows){
  if(!Array.isArray(rows)||rows.length<1||rows.length>10000)return false;
  const seen=new Set();
  for(const r of rows){
-  if(!r||typeof r.key!=='string'||!/^[A-Z0-9_-]{2,32}\\|/.test(r.key)||
+  if(!r||typeof r.key!=='string'||!/^[A-Z0-9_-]{2,32}\|/.test(r.key)||
      typeof r.text!=='string'||r.text.length>100000||seen.has(r.key))return false;
   seen.add(r.key);
  }
