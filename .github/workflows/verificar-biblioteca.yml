@@ -1,0 +1,19 @@
+name: Verificar integração da biblioteca
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar JavaScript e dados
+        run: |
+          node --check kb-local-import.js
+          node -e "const x=require('./biblioteca-tjes.json');if(x.version!==1||!Array.isArray(x.records)||new Set(x.records.map(r=>r.id)).size!==x.records.length)process.exit(1);console.log(x.records.length+' artigos OK')"
