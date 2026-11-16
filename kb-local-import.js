@@ -130,15 +130,25 @@ function writeAll(rows){
   };
  });
 }
+function validCachedArticles(rows){
+ if(!Array.isArray(rows)||rows.length<1||rows.length>10000)return false;
+ const seen=new Set();
+ for(const r of rows){
+  if(!r||typeof r.key!=='string'||!/^[A-Z0-9_-]{2,32}\\|/.test(r.key)||
+     typeof r.text!=='string'||r.text.length>100000||seen.has(r.key))return false;
+  seen.add(r.key);
+ }
+ return true;
+}
 async function loadArticles(){
  let cached=[];
- try{cached=await readAll()}catch(error){console.warn('TJES: cache de artigos indisponível',error)}
+ try{cached=await readAll();if(!validCachedArticles(cached))cached=[]}catch(error){console.warn('TJES: cache de artigos indisponível',error)}
  // Rede: somente usa uma edição se o manifesto e o conteúdo forem compatíveis.
  try{
   const manifest=await fetchJson(KNOWLEDGE_REMOTE+'versao.json');
-  if(manifest.schemaVersion!==1||!Number.isSafeInteger(manifest.contentVersion)||manifest.contentVersion<1||manifest.dataFile!=='biblioteca-tjes.json'||!Number.isSafeInteger(manifest.recordCount))throw Error('Manifesto central inválido');
+  if(manifest.schemaVersion!==1||!Number.isSafeInteger(manifest.contentVersion)||manifest.contentVersion<1||manifest.dataFile!=='biblioteca-tjes.json'||(!Number.isSafeInteger(manifest.recordCount)||manifest.recordCount<1||manifest.recordCount>10000))throw Error('Manifesto central inválido');
   const previous=Number(localStorage.getItem(VERSION_KEY)||0);
-  if(cached.length&&previous===manifest.contentVersion){
+  if(cached.length===manifest.recordCount&&previous===manifest.contentVersion){
    status.textContent='Biblioteca central v'+manifest.contentVersion+' disponível neste navegador, inclusive offline.';
    return cached;
   }
@@ -155,7 +165,7 @@ async function loadArticles(){
  try{
   const payload=await fetchJson('./biblioteca-tjes.json');
   const rows=normalizeArticles(payload);
-  try{await writeAll(rows)}catch(error){console.warn('TJES: sem cache persistente',error)}
+  try{await writeAll(rows);localStorage.removeItem(VERSION_KEY)}catch(error){console.warn('TJES: sem cache persistente',error)}
   status.textContent='Biblioteca de contingência incluída com o site: '+rows.length+' artigos.';
   return rows;
  }catch(error){throw Error('A biblioteca não pôde ser carregada: '+error.message)}
